@@ -1,23 +1,23 @@
 import http.client
 import socket
-
+import pywhois
 
 print(socket.gethostbyname('www.google.com'))
 
 with open("sample-urls") as urlsFile:
 	for line in urlsFile:
-		print(line.rstrip())
-		print(socket.gethostbyname(line.rstrip()))
-		
+		line = line.rstrip()
+		print(line)
+		print(socket.gethostbyname(line))
 
-httpServ = http.client.HTTPConnection("www.google.com", 80)
-httpServ.connect()
-httpServ.request('GET', "/index.html")
+		httpServ = http.client.HTTPConnection(line, 80)
+		httpServ.connect()
+		httpServ.request('GET', "/")
 
-response = httpServ.getresponse()
+		response = httpServ.getresponse()
 
-if response.status == http.client.OK:
-	print(response.getheaders())
+		if response.status == http.client.OK:
+			print(response.getheaders())
+						
+		httpServ.close()
 
-	
-httpServ.close()
