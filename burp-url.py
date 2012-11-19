@@ -1,11 +1,11 @@
-import httplib
+import http.client
 
-httpServ = httplib.HTTPConnection("www.google.com", 80)
+httpServ = http.client.HTTPConnection("www.google.com", 80)
 httpServ.connect()
 httpServ.request('GET', "/index.html")
 
 response = httpServ.getresponse()
-if response.status == httplib.OK:
-	print response.read()
+if response.status == http.client.OK:
+	print(response.read())
 	
 httpServ.close()
