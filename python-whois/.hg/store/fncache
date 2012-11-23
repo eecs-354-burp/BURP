@@ -1,0 +1,13 @@
+data/setup.py.i
+data/whois/_3_adjust.py.i
+data/whois/_1_query.py.i
+data/whois/tld.py.i
+data/.hgignore.i
+data/.hgtags.i
+data/README.i
+data/whois/_2_parse.py.i
+data/PKG-INFO.i
+data/whois/tld_regexpr.py.i
+data/whois/__init__.py.i
+data/test.py.i
+data/MANIFEST.i

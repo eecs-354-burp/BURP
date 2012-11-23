@@ -1,6 +1,6 @@
 import http.client
 import socket
-import pywhois
+import whois
 
 print(socket.gethostbyname('www.google.com'))
 

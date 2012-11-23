@@ -1,0 +1,9 @@
+syntax: glob
+
+__pycache__
+*.pyc
+.pypirc
+
+upload.sh
+build
+dist
