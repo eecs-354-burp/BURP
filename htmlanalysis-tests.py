@@ -15,6 +15,7 @@ class TestHTMLAnalysis(unittest.TestCase):
   def test_countElements(self):
     self.assertEqual(self.result['numIframes'], 2)
     self.assertEqual(self.result['numScripts'], 6)
+    self.assertEqual(self.result['numScriptsWithWrongExtension'], 4)
     self.assertEqual(self.result['numEmbeds'], 1)
     self.assertEqual(self.result['numObjects'], 1)
     self.assertEqual(self.result['numHyperlinks'], 1)
@@ -22,4 +23,3 @@ class TestHTMLAnalysis(unittest.TestCase):
 
 if __name__ == '__main__':
   unittest.main()
-
