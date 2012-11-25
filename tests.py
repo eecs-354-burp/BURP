@@ -20,6 +20,7 @@ class TestHTMLAnalysis(unittest.TestCase):
     self.assertEqual(self.result['numObjects'], 1)
     self.assertEqual(self.result['numHyperlinks'], 1)
     self.assertEqual(self.result['numMetaRefresh'], 1)
+    self.assertEqual(self.result['numHiddenElements'], 2)
 
 if __name__ == '__main__':
   unittest.main()

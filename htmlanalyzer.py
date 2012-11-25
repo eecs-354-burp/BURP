@@ -11,6 +11,8 @@ class HTMLAnalyzer:
 
   findJsExtension = re.compile('\.js[#?]?.*$')
 
+  findHiddenStyle = re.compile('(?:display\s*:\s*none)|(?:visibility\s*:\s*hidden)')
+
   def __init__(self, html):
     self.load(html)
 
@@ -33,7 +35,8 @@ class HTMLAnalyzer:
       'numEmbeds': self.countElems('embed'),
       'numObjects': self.countElems('object'),
       'numHyperlinks': self.countElems('a'),
-      'numMetaRefresh': self.countElems('meta', self.isRefresh)
+      'numMetaRefresh': self.countElems('meta', self.isRefresh),
+      'numHiddenElements': self.countElems('*', self.isHidden)
     }
 
   ##
@@ -61,3 +64,11 @@ class HTMLAnalyzer:
   def hasWrongExtension(self):
     src = PyQuery(this).attr['src'];
     return ( src and (self.findJsExtension.search(src) == None) );
+
+  ##
+  # Returns true if the PyQuery element (this)
+  # has its CSS style set to "display: none" or "visibility: hidden"
+  ##
+  def isHidden(self):
+    style = PyQuery(this).attr['style'];
+    return ( style and (self.findHiddenStyle.search(style) != None) );
