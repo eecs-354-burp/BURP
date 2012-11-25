@@ -2,20 +2,25 @@
 # Internal Functions for HTML Analysis
 ##
 
-from pyquery import PyQuery as pq
+from pyquery import PyQuery
 from lxml import etree
 import urllib
 
-def loadDocument(src):
-  try:
-    return pq(src)
-  except urllib.request.URLError:
-    print("Error: Invalid URL")
-    exit(1)
+def analyzeHtml(html):
+  doc = PyQuery(html)
+  return {
+    'numChars': len( html ),
+    'numIframes': len( doc('iframe') ),
+    'numScripts': len( doc('script') ),
+    'numEmbeds': len( doc('embed') ),
+    'numObjects': len( doc('object') ),
+    'numHyperlinks': len( doc('a') ),
+    'numMetaRefresh': countMetaRefresh(doc)
+  }
 
-def countElements(doc, element):
-  return len( doc(element) )
+def isRefresh():
+  httpEquiv = PyQuery(this).attr['http-equiv']
+  return ( httpEquiv and httpEquiv.find('refresh') )
 
-def countHiddenElements(doc):
-  return len( doc("body *") )
-
+def countMetaRefresh(doc):
+  return len ( doc('meta').filter(lambda i: isRefresh()) )
