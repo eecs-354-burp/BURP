@@ -10,7 +10,7 @@ class TestHTMLAnalysis(unittest.TestCase):
   def setUp(self):
     f = open('test.html', 'r')
     html = f.read()
-    self.result = analyzeHtml(html)
+    self.result = HTMLAnalyzer(html).analyze()
 
   def test_countElements(self):
     self.assertEqual(self.result['numIframes'], 2)
