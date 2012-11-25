@@ -2,7 +2,7 @@
 # Tests for HTML Analysis Library
 ##
 
-from htmlanalysis import *
+from htmlanalyzer import *
 import unittest
 
 class TestHTMLAnalysis(unittest.TestCase):
