@@ -40,6 +40,7 @@ class HTMLAnalyzer:
   def analyze(self):
     return {
       'numChars': len( self.html ),
+      'numWhitespaceChars': len( re.findall('\s', self.html) ),
       'numIframes': self.countElems('iframe'),
       'numScripts': self.countElems('script'),
       'numScriptsWithWrongExtension': self.countElems('script', self.hasWrongExtension),
