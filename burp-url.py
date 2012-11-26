@@ -1,23 +1,36 @@
 import http.client
 import socket
 import whois
+import sys
 
-print(socket.gethostbyname('www.google.com'))
+def getWhoIs(arg):
+  domain = whois.query('domain '+arg);
+  return domain.__dict__;
 
-with open("sample-urls") as urlsFile:
-	for line in urlsFile:
-		line = line.rstrip()
-		print(line)
-		print(socket.gethostbyname(line))
+def getHttpHeaders(arg):
+  httpServ = http.client.HTTPConnection(arg, 80)
+  httpServ.connect()
+  httpServ.request('GET', "/")
 
-		httpServ = http.client.HTTPConnection(line, 80)
-		httpServ.connect()
-		httpServ.request('GET', "/")
+  response = httpServ.getresponse()
+  print(response.status);
+  headers = response.getheaders();
+  
+  httpServ.close()
+  
+  return headers;
 
-		response = httpServ.getresponse()
+def getIpAddr(arg):
+  return socket.gethostbyname(arg);
 
-		if response.status == http.client.OK:
-			print(response.getheaders())
-						
-		httpServ.close()
+def main():
+  arg = sys.argv[1];
+  httpHeaders = getHttpHeaders(arg);
+  whois = getWhoIs(arg);
+  ip = getIpAddr(arg);
+  res = {"httpheaders" : httpHeaders, "whois" : whois, "ip" : ip};
+  print(res)
+  return res;  
 
+if __name__ == "__main__":
+    main()
