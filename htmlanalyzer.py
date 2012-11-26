@@ -24,15 +24,16 @@ class HTMLAnalyzer:
 
   smallElementThreshold = 5;
 
-  def __init__(self, html):
-    self.load(html)
+  def __init__(self, url):
+    self.load(url)
 
   ##
-  # Loads an HTML string for analysis
+  # Loads the HTML document at the given URL for analysis
   ##
-  def load(self, html):
-    self.html = html
-    self.doc = PyQuery(html)
+  def load(self, url):
+    f = urllib.urlopen(url)
+    self.html = f.read()
+    self.doc = PyQuery(self.html)
 
   ##
   # Returns a dictionary with the analysis results
@@ -115,7 +116,8 @@ class HTMLAnalyzer:
     elem = PyQuery(this)
     width = self.getDimension(elem, 'width')
     height = self.getDimension(elem, 'height')
-    return ( (width != None and (width <= self.smallElementThreshold)) or (height != None and (height <= self.smallElementThreshold)) )
+    return ( (width != None and (width <= self.smallElementThreshold)) or
+             (height != None and (height <= self.smallElementThreshold)) )
 
   ##
   # Returns true if the document has more than one html, head, title, or body element

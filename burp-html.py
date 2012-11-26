@@ -14,12 +14,9 @@ if not len(sys.argv) == 2:
 url = sys.argv[1]
 
 try:
-  f = urllib.urlopen(url)
-  html = f.read()
+  analysis = HTMLAnalyzer(url).analyze()
 except urllib.request.URLError:
   print("Error: Invalid URL")
   exit(1)
-
-analysis = HTMLAnalyzer(html).analyze()
 
 print( json.dumps(analysis) )

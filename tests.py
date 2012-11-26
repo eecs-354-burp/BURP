@@ -2,15 +2,17 @@
 # Tests for HTML Analysis Library
 ##
 
+import htmlanalyzer
 from htmlanalyzer import *
 import unittest
+
+# Stub the urllib.openurl method to open local files
+htmlanalyzer.urllib.openurl = lambda filepath: open(filepath, 'r')
 
 class TestHTMLAnalysis(unittest.TestCase):
 
   def setUp(self):
-    f = open('test.html', 'r')
-    html = f.read()
-    self.result = HTMLAnalyzer(html).analyze()
+    self.result = HTMLAnalyzer('test.html').analyze()
 
   def test_countElements(self):
     self.assertEqual(self.result['numIframes'], 2)
