@@ -6,13 +6,13 @@ import htmlanalyzer
 from htmlanalyzer import *
 import unittest
 
-# Stub the urllib.openurl method to open local files
-htmlanalyzer.urllib.openurl = lambda filepath: open(filepath, 'r')
+# Stub the urllib.urlopen method to open local files
+htmlanalyzer.urllib.urlopen = lambda filepath: open('test.html', 'r')
 
 class TestHTMLAnalysis(unittest.TestCase):
 
   def setUp(self):
-    self.result = HTMLAnalyzer('test.html').analyze()
+    self.result = HTMLAnalyzer('http://www.google.com').analyze()
 
   def test_countElements(self):
     self.assertEqual(self.result['numIframes'], 2)
@@ -26,6 +26,7 @@ class TestHTMLAnalysis(unittest.TestCase):
     self.assertEqual(self.result['numSmallElements'], 2)
     self.assertEqual(self.result['hasDoubleDocuments'], True)
     self.assertEqual(self.result['numUnsafeIncludedUrls'], 10)
+    self.assertEqual(self.result['numExternalUrls'], 5)
 
 if __name__ == '__main__':
   unittest.main()

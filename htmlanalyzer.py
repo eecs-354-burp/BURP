@@ -22,6 +22,8 @@ class HTMLAnalyzer:
 
   findNumber = re.compile('([\.\d-]+)')
 
+  findUrlDomain = re.compile('^(?:http[s]?|ftp):\/\/(?:www\.)?([^:\/\s]+)')
+
   smallElementThreshold = 5;
 
   def __init__(self, url):
@@ -31,6 +33,8 @@ class HTMLAnalyzer:
   # Loads the HTML document at the given URL for analysis
   ##
   def load(self, url):
+    self.url = url
+    self.domain = self.findUrlDomain.search(url).group(1)
     f = urllib.urlopen(url)
     self.html = f.read()
     self.doc = PyQuery(self.html)
@@ -39,6 +43,9 @@ class HTMLAnalyzer:
   # Returns a dictionary with the analysis results
   ##
   def analyze(self):
+    unsafeUrls = self.getUnsafeIncludedUrls()
+    safeUrls = self.getSafeIncludedUrls()
+    externalUrls = filter(self.isExternalUrl, (unsafeUrls + safeUrls))
     return {
       'numChars': len( self.html ),
       'numWhitespaceChars': len( re.findall('\s', self.html) ),
@@ -52,7 +59,8 @@ class HTMLAnalyzer:
       'numHiddenElements': self.countElems('*', self.isHidden),
       'numSmallElements': self.countElems('*', self.isSmall),
       'hasDoubleDocuments': self.hasDoubleDocuments(),
-      'numUnsafeIncludedUrls': len( self.getUnsafeIncludedUrls() )
+      'numUnsafeIncludedUrls': len( unsafeUrls ),
+      'numExternalUrls': len( externalUrls )
     }
 
   ##
@@ -143,3 +151,23 @@ class HTMLAnalyzer:
              self.getAttrValues('object', 'data') )
     # Remove empty strings
     return filter(lambda url: len(url) > 0, urls)
+
+  ##
+  # Returns an array of the URLs for external content that are included
+  # by elements that CANNOT be used to include executable code
+  ##
+  def getSafeIncludedUrls(self):
+    urls = ( self.getAttrValues('img', 'src') + self.getAttrValues('link', 'href') )
+    # Remove empty strings
+    return filter(lambda url: len(url) > 0, urls) 
+
+  ##
+  # Returns true if the given URL has a different domain than the current document
+  ##
+  def isExternalUrl(self, url):
+    match = self.findUrlDomain.search(url)
+    if match:
+      domain = match.group(1)
+      return (domain == self.domain)
+    else:
+      return False
