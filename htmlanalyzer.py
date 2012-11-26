@@ -24,7 +24,9 @@ class HTMLAnalyzer:
 
   findUrlDomain = re.compile('^(?:http[s]?|ftp):\/\/(?:www\.)?([^:\/\s]+)')
 
-  smallElementThreshold = 5;
+  smallElementAreaThreshold = 30; # px ^ 2
+
+  smallElementDimensionThreshold = 2; # px
 
   def __init__(self, url):
     self.load(url)
@@ -124,8 +126,11 @@ class HTMLAnalyzer:
     elem = PyQuery(this)
     width = self.getDimension(elem, 'width')
     height = self.getDimension(elem, 'height')
-    return ( (width != None and (width <= self.smallElementThreshold)) or
-             (height != None and (height <= self.smallElementThreshold)) )
+    if (width != None) and (height != None):
+      return (width * height) < self.smallElementAreaThreshold;
+    else:
+      return ( (width != None and (width <= self.smallElementDimensionThreshold)) or
+               (height != None and (height <= self.smallElementDimensionThreshold)) )
 
   ##
   # Returns true if the document has more than one html, head, title, or body element
