@@ -50,7 +50,8 @@ class HTMLAnalyzer:
       'numMetaRefresh': self.countElems('meta', self.isRefresh),
       'numHiddenElements': self.countElems('*', self.isHidden),
       'numSmallElements': self.countElems('*', self.isSmall),
-      'hasDoubleDocuments': self.hasDoubleDocuments()
+      'hasDoubleDocuments': self.hasDoubleDocuments(),
+      'numIncludedUrls': self.numIncludedUrls()
     }
 
   ##
@@ -123,3 +124,18 @@ class HTMLAnalyzer:
     for tagName in ['html', 'head', 'title', 'body']:
       if (len( self.doc(tagName) ) > 1) : return True
     return False
+
+  ##
+  # Returns true if the given attribute is defined for the PyQuery element (this)
+  ##
+  def hasAttr(self, attr):
+    value = PyQuery(this).attr[attr]
+    return ( (value != None) and (len(value) > 0) )
+
+  ##
+  # Counts the number of elements that include external content on the web page
+  ##
+  def numIncludedUrls(self):
+    return ( self.countElems('script, iframe, frame, embed', lambda: self.hasAttr('src')) + 
+             self.countElems('form', lambda: self.hasAttr('action')) +
+             self.countElems('object', lambda: self.hasAttr('data')) )
