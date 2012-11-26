@@ -49,7 +49,8 @@ class HTMLAnalyzer:
       'numHyperlinks': self.countElems('a'),
       'numMetaRefresh': self.countElems('meta', self.isRefresh),
       'numHiddenElements': self.countElems('*', self.isHidden),
-      'numSmallElements': self.countElems('*', self.isSmall)
+      'numSmallElements': self.countElems('*', self.isSmall),
+      'hasDoubleDocuments': self.hasDoubleDocuments()
     }
 
   ##
@@ -114,3 +115,11 @@ class HTMLAnalyzer:
     width = self.getDimension(elem, 'width')
     height = self.getDimension(elem, 'height')
     return ( (width != None and (width <= self.smallElementThreshold)) or (height != None and (height <= self.smallElementThreshold)) )
+
+  ##
+  # Returns true if the document has more than one html, head, title, or body element
+  ##
+  def hasDoubleDocuments(self):
+    for tagName in ['html', 'head', 'title', 'body']:
+      if (len( self.doc(tagName) ) > 1) : return True
+    return False
