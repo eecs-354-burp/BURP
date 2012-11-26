@@ -51,7 +51,7 @@ class HTMLAnalyzer:
       'numHiddenElements': self.countElems('*', self.isHidden),
       'numSmallElements': self.countElems('*', self.isSmall),
       'hasDoubleDocuments': self.hasDoubleDocuments(),
-      'numIncludedUrls': self.numIncludedUrls()
+      'numUnsafeIncludedUrls': len( self.getUnsafeIncludedUrls() )
     }
 
   ##
@@ -126,16 +126,18 @@ class HTMLAnalyzer:
     return False
 
   ##
-  # Returns true if the given attribute is defined for the PyQuery element (this)
+  # Returns an array of the values for the given attribute in elements with the given tag names
   ##
-  def hasAttr(self, attr):
-    value = PyQuery(this).attr[attr]
-    return ( (value != None) and (len(value) > 0) )
+  def getAttrValues(self, tagNames, attr):
+    return self.doc(tagNames).map(lambda i: PyQuery(this).attr[attr])
 
   ##
-  # Counts the number of elements that include external content on the web page
+  # Returns an array of the URLs for external content that are included 
+  # by elements that can be used to include executable code
   ##
-  def numIncludedUrls(self):
-    return ( self.countElems('script, iframe, frame, embed', lambda: self.hasAttr('src')) + 
-             self.countElems('form', lambda: self.hasAttr('action')) +
-             self.countElems('object', lambda: self.hasAttr('data')) )
+  def getUnsafeIncludedUrls(self):
+    urls = ( self.getAttrValues('script, iframe, frame, embed', 'src') + 
+             self.getAttrValues('form', 'action') +
+             self.getAttrValues('object', 'data') )
+    # Remove empty strings
+    return filter(lambda url: len(url) > 0, urls)
