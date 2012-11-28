@@ -4,7 +4,8 @@ import urllib2
 import threading
 import Queue
 import codecs
-from sets import Set
+
+logFile = codecs.open('error_log_validator.txt', 'a', 'utf-8')
 
 class UrlValidator(threading.Thread):
     def __init__(self, url_queue, out_queue):
@@ -24,18 +25,18 @@ class UrlValidator(threading.Thread):
                     if res and res.code < 400:
                         self.out_queue.put(url)
                 except urllib2.HTTPError as e: # 4xx or 5xx
-                    print "%s %d" % (url, e.code)
+                    logFile.write("%s %d\n" % (url, e.code))
                 except urllib2.URLError as e:
-                    print url," ", e
+                    logFile.write("%s %s\n" % (url, str(e)))
             except Exception as e:
-                print url, " ", e
+                logFile.write("%s %s\n" % (url, str(e)))
             self.url_queue.task_done()
 
 
 class UrlLogger(threading.Thread):
     def __init__(self, fileName, urls):
         threading.Thread.__init__(self)
-        self.file = codecs.open(fileName, 'w', 'utf-8')
+        self.file = codecs.open(fileName, 'a', 'utf-8')
         self.urls = urls
 
     def run(self):
@@ -44,7 +45,7 @@ class UrlLogger(threading.Thread):
             try:
                 self.file.write("%s\n" % url)
             except Exception as e:
-                print "error on write ", e
+                logFile.write("error on write %s\n" % e)
             self.urls.task_done()
 
     def close(self):
@@ -59,26 +60,32 @@ def selectMaliciousUrls(curs, limit=None):
     curs.execute(sql)
     return curs.fetchall()
 
-def getCurrentUrls(fileName):
-    with codecs.open(fileName, 'r', 'utf-8') as f:
-        retSet = Set()
+def getCurrentUrls(validUrlsFile, errorsUrlFile):
+    retSet = set()
+
+    with codecs.open(validUrlsFile, 'r', 'utf-8') as f:
         for line in f:
             retSet.add(line.strip())
-        return retSet
+
+    with codecs.open(errorsUrlFile, 'r', 'utf-8') as f:
+        for line in f:
+            parts = line.strip().split(' ')
+            if parts[0].startswith('http://') or parts[0].startswith('https://'):
+                retSet.add(parts[0])
+    return retSet
 
 def makeUrl(maybeDomain):
     if not (maybeDomain.startswith('http://') or maybeDomain.startswith('https://')):
         return "http://%s" % maybeDomain
     return maybeDomain
 
-
-def getMaliciousUrls(dbFile, validatedUrls, limit=None):
-    #urlSet = getCurrentUrls(validatedUrls)
+# remove any previously fetched
+def getMaliciousUrls(dbFile, prevUrls,limit=None):
     conn = sqlite3.connect(dbFile)
     cursor = conn.cursor()
     urls = selectMaliciousUrls(cursor, limit=limit)
     conn.close()
-    return urls
+    return [u for u in urls if makeUrl(u[0]) not in prevUrls]
 
 def fetchUrls(urlList, validatedFileName, threadCount=5):
     url_queue = Queue.Queue()
@@ -102,8 +109,9 @@ def fetchUrls(urlList, validatedFileName, threadCount=5):
 if __name__ == '__main__':
     if len(sys.argv) > 2:
         _, dbFile, outFile = sys.argv
-        sys.stdout = open('error_log_validator.txt', 'w')
-        urls = getMaliciousUrls(dbFile)
+
+        prevUrls = getCurrentUrls(outFile, 'error_log_validator.txt')
+        urls = getMaliciousUrls(dbFile, prevUrls)
         fetchUrls(urls, outFile, 8)
 
         
