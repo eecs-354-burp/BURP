@@ -6,7 +6,17 @@ from pprint import pprint
 from urllib.parse import urlparse
 
 def getWhoIs(arg):
-  domain = whois.query(arg.netloc);
+  """
+  argList = arg.netloc.split(".");
+  
+  print(argList[-2]+"."+argList[-1])
+  try:
+    domain = whois.query(argList[-2]+"."+argList[-1]);
+  except:
+    whois.query(argList[-3]+"."+argList[-2]+"."+argList[-1])
+  """
+  whois.query(arg.netloc)
+  print(domain)
   return domain.__dict__;
 
 def getHttpHeaders(arg):
