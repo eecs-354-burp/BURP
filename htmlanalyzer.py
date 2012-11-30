@@ -60,6 +60,7 @@ class HTMLAnalyzer:
   def analyze(self):
     numChars = len( self.html )
     numWhitespaceChars = len( re.findall('\s', self.html) )
+    numScriptChars = self.countScriptChars()
 
     unsafeUrls = self.getUnsafeIncludedUrls()
     safeUrls = self.getSafeIncludedUrls()
@@ -68,6 +69,7 @@ class HTMLAnalyzer:
     return {
       'numChars': numChars,
       'percentWhitespace': round( (numWhitespaceChars / numChars) * 100, 2 ),
+      'percentScriptChars': round( (numScriptChars / numChars) * 100, 2 ),
       'numIframes': self.countElems('iframe'),
       'numScripts': self.countElems('script'),
       'numScriptsWithWrongExtension': self.countElems('script', self.hasWrongExtension),
@@ -193,3 +195,10 @@ class HTMLAnalyzer:
       return (domain == self.domain)
     else:
       return False
+
+  ##
+  # Returns the number of characters of inline script content
+  ##
+  def countScriptChars(self):
+    return sum(len(script) for script in self.doc('script').contents())
+
