@@ -4,8 +4,12 @@
 
 from pyquery import PyQuery
 from lxml import etree
-import urllib
 import re
+
+try:
+  from urllib.request import urlopen
+except ImportError:
+  from urllib2 import urlopen
 
 class HTMLAnalyzer:
 
@@ -37,7 +41,7 @@ class HTMLAnalyzer:
   def load(self, url):
     self.url = url
     self.domain = self.findUrlDomain.search(url).group(1)
-    f = urllib.urlopen(url)
+    f = urlopen(url)
     self.html = f.read()
     self.doc = PyQuery(self.html)
 
@@ -47,7 +51,7 @@ class HTMLAnalyzer:
   def analyze(self):
     unsafeUrls = self.getUnsafeIncludedUrls()
     safeUrls = self.getSafeIncludedUrls()
-    externalUrls = filter(self.isExternalUrl, (unsafeUrls + safeUrls))
+    externalUrls = [url for url in (unsafeUrls + safeUrls) if self.isExternalUrl(url)] 
     return {
       'numChars': len( self.html ),
       'numWhitespaceChars': len( re.findall('\s', self.html) ),
@@ -155,7 +159,7 @@ class HTMLAnalyzer:
              self.getAttrValues('form', 'action') +
              self.getAttrValues('object', 'data') )
     # Remove empty strings
-    return filter(lambda url: len(url) > 0, urls)
+    return [url for url in urls if url] 
 
   ##
   # Returns an array of the URLs for external content that are included
@@ -164,7 +168,7 @@ class HTMLAnalyzer:
   def getSafeIncludedUrls(self):
     urls = ( self.getAttrValues('img', 'src') + self.getAttrValues('link', 'href') )
     # Remove empty strings
-    return filter(lambda url: len(url) > 0, urls) 
+    return [url for url in urls if url] 
 
   ##
   # Returns true if the given URL has a different domain than the current document
