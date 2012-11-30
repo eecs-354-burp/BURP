@@ -3,13 +3,9 @@
 ##
 
 from pyquery import PyQuery
+from pyquery.openers import url_opener
 from lxml import etree
 import re
-
-try:
-  from urllib.request import urlopen
-except ImportError:
-  from urllib2 import urlopen
 
 class HTMLAnalyzer:
 
@@ -35,8 +31,8 @@ class HTMLAnalyzer:
   def __init__(self, url=''):
     if url:
       self.setUrl(url)
-      f = urlopen(url)
-      html = f.read().decode('utf-8')
+      # Use PyQuery's URL opener to properly handle content encoding
+      html = str( url_opener(url, {}).read() )
       self.load(html)
 
   ##
