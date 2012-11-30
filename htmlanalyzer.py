@@ -58,12 +58,16 @@ class HTMLAnalyzer:
   # Returns a dictionary with the analysis results
   ##
   def analyze(self):
+    numChars = len( self.html )
+    numWhitespaceChars = len( re.findall('\s', self.html) )
+
     unsafeUrls = self.getUnsafeIncludedUrls()
     safeUrls = self.getSafeIncludedUrls()
     externalUrls = [url for url in (unsafeUrls + safeUrls) if self.isExternalUrl(url)] 
+
     return {
-      'numChars': len( self.html ),
-      'numWhitespaceChars': len( re.findall('\s', self.html) ),
+      'numChars': numChars,
+      'percentWhitespace': round( (numWhitespaceChars / numChars) * 100, 2 ),
       'numIframes': self.countElems('iframe'),
       'numScripts': self.countElems('script'),
       'numScriptsWithWrongExtension': self.countElems('script', self.hasWrongExtension),
