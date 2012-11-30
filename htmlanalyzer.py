@@ -32,18 +32,27 @@ class HTMLAnalyzer:
 
   smallElementDimensionThreshold = 2; # px
 
-  def __init__(self, url):
-    self.load(url)
+  def __init__(self, url=''):
+    if url:
+      self.setUrl(url)
+      f = urlopen(url)
+      html = f.read().decode('utf-8')
+      self.load(html)
 
   ##
-  # Loads the HTML document at the given URL for analysis
+  # Loads the given HTML string for analysis
   ##
-  def load(self, url):
+  def load(self, html):
+    # Must use 'html' parser to handle poorly-formatted HTML
+    self.doc = PyQuery(html, parser='html')
+    self.html = html
+
+  ##
+  # Sets the internal url and domain properties to match the given URL
+  ##
+  def setUrl(self, url):
     self.url = url
     self.domain = self.findUrlDomain.search(url).group(1)
-    f = urlopen(url)
-    self.html = f.read()
-    self.doc = PyQuery(self.html)
 
   ##
   # Returns a dictionary with the analysis results
