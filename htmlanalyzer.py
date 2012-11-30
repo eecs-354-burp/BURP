@@ -59,7 +59,7 @@ class HTMLAnalyzer:
   ##
   def analyze(self):
     numChars = len( self.html )
-    numWhitespaceChars = len( re.findall('\s', self.html) )
+    numWhitespaceChars = self.countWhitespaceChars()
     numScriptChars = self.countScriptChars()
 
     unsafeUrls = self.getUnsafeIncludedUrls()
@@ -195,6 +195,12 @@ class HTMLAnalyzer:
       return (domain == self.domain)
     else:
       return False
+
+  ##
+  # Returns the number of whitespace characters
+  ##
+  def countWhitespaceChars(self):
+    return len( re.findall('\s', self.html) )
 
   ##
   # Returns the number of characters of inline script content
