@@ -103,7 +103,7 @@ class HTMLAnalyzer:
   ##
   def isRefresh(self):
     httpEquiv = PyQuery(this).attr['http-equiv']
-    return ( httpEquiv and httpEquiv.find('refresh') )
+    return ( httpEquiv and httpEquiv.find('refresh') > -1 )
 
   ##
   # Returns true if the PyQuery element (this)
