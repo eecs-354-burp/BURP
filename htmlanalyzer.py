@@ -70,8 +70,8 @@ class HTMLAnalyzer:
 
     return {
       'numChars': numChars,
-      'percentWhitespace': round( (numWhitespaceChars / numChars) * 100, 2 ),
-      'percentScriptChars': round( (numScriptChars / numChars) * 100, 2 ),
+      'percentWhitespace': self.getPercentage(numWhitespaceChars, numChars),
+      'percentScriptChars': self.getPercentage(numScriptChars, numChars),
       'numIframes': self.countElems('iframe'),
       'numScripts': self.countElems('script'),
       'numScriptsWithWrongExtension': self.countElems('script', self.hasWrongExtension),
@@ -84,8 +84,14 @@ class HTMLAnalyzer:
       'hasDoubleDocuments': self.hasDoubleDocuments(),
       'numUnsafeIncludedUrls': len( unsafeUrls ),
       'numExternalUrls': len( externalUrls ),
-      'percentUnknownElements': round( (numUnknownElements / numElements) * 100, 2 ),
+      'percentUnknownElements': self.getPercentage(numUnknownElements, numElements),
     }
+
+  ##
+  # Returns the percentage of a / b
+  ##
+  def getPercentage(self, a, b):
+    return ( float(a) / float(b) ) * 100
 
   ##
   # Counts the number of elements matching the given tag name,
