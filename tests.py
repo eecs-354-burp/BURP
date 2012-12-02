@@ -328,6 +328,10 @@ class TestGetSafeIncludedUrls(HTMLAnalyzerTestCase):
 
 class TestIsExternalUrl(HTMLAnalyzerTestCase):
 
+  def test_NoDomain(self):
+    result = self.analyzer.isExternalUrl('/directory/index.html')
+    self.assertFalse(result)
+
   def test_InternalUrl(self):
     result = self.analyzer.isExternalUrl('http://www.example.com')
     self.assertFalse(result)
