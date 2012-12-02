@@ -201,7 +201,7 @@ class HTMLAnalyzer:
     match = self.findUrlDomain.search(url)
     if match:
       domain = match.group(1)
-      return (domain == self.domain)
+      return (domain != self.domain)
     else:
       return False
 
