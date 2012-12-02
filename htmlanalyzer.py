@@ -5,6 +5,11 @@
 from pyquery import PyQuery
 from pyquery.openers import url_opener
 from lxml import etree
+
+# Import list of suspicious object classids from PhoneyC
+# (http://code.google.com/p/phoneyc/)
+from CLSID import clsidlist
+
 import re
 
 class HTMLAnalyzer:
@@ -81,6 +86,7 @@ class HTMLAnalyzer:
       'numScriptsWithWrongExtension': self.countElems('script', self.hasWrongExtension),
       'numEmbeds': self.countElems('embed'),
       'numObjects': self.countElems('object'),
+      'numSuspiciousObjects': self.countSuspiciousObjects(),
       'numHyperlinks': self.countElems('a'),
       'numMetaRefresh': self.countElems('meta', self.isRefresh),
       'numHiddenElements': self.countElems('*', self.isHidden),
@@ -88,7 +94,7 @@ class HTMLAnalyzer:
       'hasDoubleDocuments': self.hasDoubleDocuments(),
       'numUnsafeIncludedUrls': len( unsafeUrls ),
       'numExternalUrls': len( externalUrls ),
-      'percentUnknownElements': self.getPercentage(numUnknownElements, numElements),
+      'percentUnknownElements': self.getPercentage(numUnknownElements, numElements)
     }
 
   ##
@@ -169,6 +175,13 @@ class HTMLAnalyzer:
   ##
   def countUnknownElements(self):
     return len( [elem for elem in self.doc('*') if not self.isKnownElement.match(elem.tag)] )
+
+  ##
+  # Returns the number of object elements with classids found in clsidlist
+  ##
+  def countSuspiciousObjects(self):
+    classids = self.getAttrValues('object', 'classid')
+    return len( [classid for classid in classids if classid in clsidlist] )
 
   ##
   # PyQuery Filter Functions
