@@ -30,6 +30,10 @@ class HTMLAnalyzer:
 
   smallElementDimensionThreshold = 2; # px
 
+  ##
+  # Initialization Methods
+  ##
+
   def __init__(self, url=''):
     if url:
       self.setUrl(url)
@@ -41,7 +45,7 @@ class HTMLAnalyzer:
   # Loads the given HTML string for analysis
   ##
   def load(self, html):
-    # Must use 'html' parser to handle poorly-formatted HTML
+    # Must use 'html' parser to handle invalid HTML
     self.doc = PyQuery(html, parser='html')
     self.html = html
 
@@ -88,10 +92,59 @@ class HTMLAnalyzer:
     }
 
   ##
+  # Helper Methods
+  ##
+
+  ##
   # Returns the percentage of a / b
   ##
   def getPercentage(self, a, b):
     return ( float(a) / float(b) ) * 100
+
+  ##
+  # Returns an array of the values for the given attribute in elements with the given tag names
+  ##
+  def getAttrValues(self, tagNames, attr):
+    return self.doc(tagNames).map(lambda i: PyQuery(this).attr[attr])
+
+  ##
+  # Returns the width or height of the given PyQuery element
+  # (when set explicitly via the style, width, or height attributes)
+  ##
+  def getDimension(self, elem, dim):
+    style = elem.attr['style']
+    attr = elem.attr[dim]
+    # Try to find the value of the CSS width and height properties first,
+    # since they take precedence over the width and height HTML attributes
+    match = ( (style and len(style) > 0 and self.findCssPropValue[dim].search(style)) or
+              (attr and len(attr) > 0 and self.findNumber.search(attr)) or
+              None )
+    if match:
+      value = match.group(1)
+      # Cast to float or int appropriately
+      return (float(value) if '.' in value else int(value))
+    else:
+      return None
+
+  ##
+  # Character-Counting Methods
+  ##
+
+  ##
+  # Returns the number of whitespace characters
+  ##
+  def countWhitespaceChars(self):
+    return len( re.findall('\s', self.html) )
+
+  ##
+  # Returns the number of characters of inline script content
+  ##
+  def countScriptChars(self):
+    return sum(len(script) for script in self.doc('script').contents())
+
+  ##
+  # Element-Counting Methods
+  ##
 
   ##
   # Counts the number of elements matching the given tag name,
@@ -102,6 +155,24 @@ class HTMLAnalyzer:
       return len( self.doc(tagName).filter(lambda i, this: f(this)) )
     else:
       return len( self.doc(tagName) )
+
+  ##
+  # Returns true if the document has more than one html, head, title, or body element
+  ##
+  def hasDoubleDocuments(self):
+    for tagName in ['html', 'head', 'title', 'body']:
+      if (len( self.doc(tagName) ) > 1) : return True
+    return False
+
+  ##
+  # Returns the number of unknown HTML elements
+  ##
+  def countUnknownElements(self):
+    return len( [elem for elem in self.doc('*') if not self.isKnownElement.match(elem.tag)] )
+
+  ##
+  # PyQuery Filter Functions
+  ##
 
   ##
   # Returns true if the PyQuery element (this)
@@ -128,27 +199,8 @@ class HTMLAnalyzer:
     return ( style and (self.findHiddenStyle.search(style) != None) );
 
   ##
-  # Returns the width or height of the given PyQuery element
-  # (when set explicitly via the style, width, or height attributes)
-  ##
-  def getDimension(self, elem, dim):
-    style = elem.attr['style']
-    attr = elem.attr[dim]
-    # Try to find the value of the CSS width and height properties first,
-    # since they take precedence over the width and height HTML attributes
-    match = ( (style and len(style) > 0 and self.findCssPropValue[dim].search(style)) or
-              (attr and len(attr) > 0 and self.findNumber.search(attr)) or
-              None )
-    if match:
-      value = match.group(1)
-      # Cast to float or int appropriately
-      return (float(value) if '.' in value else int(value))
-    else:
-      return None
-
-  ##
-  # Returns true if either the width or height of the PyQuery element (this)
-  # are less than or equal to smallElementThreshold
+  # Returns true if the area, width, or height of the PyQuery element (this)
+  # are smaller than predetermined thresholds
   ##
   def isSmall(self, this):
     elem = PyQuery(this)
@@ -157,22 +209,12 @@ class HTMLAnalyzer:
     if (width != None) and (height != None):
       return (width * height) < self.smallElementAreaThreshold;
     else:
-      return ( (width != None and (width <= self.smallElementDimensionThreshold)) or
-               (height != None and (height <= self.smallElementDimensionThreshold)) )
+      return ( (width != None and (width < self.smallElementDimensionThreshold)) or
+               (height != None and (height < self.smallElementDimensionThreshold)) )
 
   ##
-  # Returns true if the document has more than one html, head, title, or body element
+  # URL-Analysis Methods
   ##
-  def hasDoubleDocuments(self):
-    for tagName in ['html', 'head', 'title', 'body']:
-      if (len( self.doc(tagName) ) > 1) : return True
-    return False
-
-  ##
-  # Returns an array of the values for the given attribute in elements with the given tag names
-  ##
-  def getAttrValues(self, tagNames, attr):
-    return self.doc(tagNames).map(lambda i: PyQuery(this).attr[attr])
 
   ##
   # Returns an array of the URLs for external content that are included 
@@ -204,22 +246,3 @@ class HTMLAnalyzer:
       return (domain != self.domain)
     else:
       return False
-
-  ##
-  # Returns the number of whitespace characters
-  ##
-  def countWhitespaceChars(self):
-    return len( re.findall('\s', self.html) )
-
-  ##
-  # Returns the number of characters of inline script content
-  ##
-  def countScriptChars(self):
-    return sum(len(script) for script in self.doc('script').contents())
-
-  ##
-  # Returns the number of unknown HTML elements
-  ##
-  def countUnknownElements(self):
-    return len( [elem for elem in self.doc('*') if self.isKnownElement.match(elem.tag) == None] )
-
