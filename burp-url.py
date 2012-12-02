@@ -5,22 +5,38 @@ import sys
 from pprint import pprint
 from urllib.parse import urlparse
 
-def getWhoIs(arg):
-  """
-  argList = arg.netloc.split(".");
+def getDomain(arg):
+  argList = arg.split(".");
   
-  print(argList[-2]+"."+argList[-1])
-  try:
-    domain = whois.query(argList[-2]+"."+argList[-1]);
-  except:
-    whois.query(argList[-3]+"."+argList[-2]+"."+argList[-1])
-  """
-  whois.query(arg.netloc)
-  print(domain)
-  return domain.__dict__;
+  if len(argList) < 2:
+    return argList[0];
+    
+  tlds = open("tlds_nocomments.txt");
+  
+  buf = tlds.read();
+  res = None;
+  
+  if argList[-1] in buf:
+    res = argList[-2]+"."+argList[-1];
+  
+  if argList[-2]+"."+argList[-1] in buf:
+    res = argList[-3]+"."+argList[-2]+"."+argList[-1];
+  
+  print("res = " + res);
+  tlds.close();
+  
+  if res == None:
+    raise Exception;
+  else:
+    return res;
+
+def getWhoIs(dom):
+  ws = whois.query(dom)
+  print(ws);
+  return ws.__dict__;
 
 def getHttpHeaders(arg):
-  httpServ = http.client.HTTPConnection(arg.netloc, 80, timeout=5)
+  httpServ = http.client.HTTPConnection(arg.netloc, 80, timeout=2)
   #httpServ.set_debuglevel(1)
   httpServ.connect()
   httpServ.request('GET', arg.path)
@@ -35,12 +51,12 @@ def getHttpHeaders(arg):
   
   return headers;
 
-def getIpAddr(arg):
-  return socket.gethostbyname(arg.netloc);
+def getIpAddr(dom):
+  return socket.gethostbyname(dom);
 
 def parseUrl(arg):
   url = urlparse(arg);
-  pprint(url);
+  #pprint(url);
   return url;
 
 def main():
@@ -56,6 +72,12 @@ def main():
   httpHeaders = None;
   ip = None;
   whois = None;
+  domain = getDomain(arg.netloc)
+  print(domain)
+  try:
+    ip = getIpAddr(domain);
+  except Exception as e:
+    print("unable to get ip")
   
   try:
     httpHeaders = getHttpHeaders(arg);
@@ -63,15 +85,12 @@ def main():
     print("unable to get HTTP headers");
   
   try:
-    whois = getWhoIs(arg);
+    if (ip != None):
+      whois = getWhoIs(domain);
   except Exception as e:
     print("unable to get whois")
-    
-    
-  try:
-    ip = getIpAddr(arg);
-  except Exception as e:
-    print("unable to get ip")
+  
+  #iptwhois = getWhoIs(domain);
   
   res = {"httpheaders" : httpHeaders, "whois" : whois, "ip" : ip};
   pprint(res)
