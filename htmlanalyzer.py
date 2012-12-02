@@ -99,7 +99,7 @@ class HTMLAnalyzer:
   ##
   def countElems(self, tagName, f = None):
     if f:
-      return len( self.doc(tagName).filter(lambda i: f()) )
+      return len( self.doc(tagName).filter(lambda i, this: f(this)) )
     else:
       return len( self.doc(tagName) )
 
@@ -107,7 +107,7 @@ class HTMLAnalyzer:
   # Returns true if the PyQuery element (this)
   # has an "http-equiv" attribute with a value of "refresh"
   ##
-  def isRefresh(self):
+  def isRefresh(self, this):
     httpEquiv = PyQuery(this).attr['http-equiv']
     return ( httpEquiv and httpEquiv.find('refresh') > -1 )
 
@@ -115,7 +115,7 @@ class HTMLAnalyzer:
   # Returns true if the PyQuery element (this)
   # has a "src" attribute that points to a URI without a "js" extension
   ##
-  def hasWrongExtension(self):
+  def hasWrongExtension(self, this):
     src = PyQuery(this).attr['src'];
     return ( src and (self.findJsExtension.search(src) == None) );
 
@@ -123,7 +123,7 @@ class HTMLAnalyzer:
   # Returns true if the PyQuery element (this)
   # has its CSS style set to "display: none" or "visibility: hidden"
   ##
-  def isHidden(self):
+  def isHidden(self, this):
     style = PyQuery(this).attr['style'];
     return ( style and (self.findHiddenStyle.search(style) != None) );
 
@@ -150,7 +150,7 @@ class HTMLAnalyzer:
   # Returns true if either the width or height of the PyQuery element (this)
   # are less than or equal to smallElementThreshold
   ##
-  def isSmall(self):
+  def isSmall(self, this):
     elem = PyQuery(this)
     width = self.getDimension(elem, 'width')
     height = self.getDimension(elem, 'height')
