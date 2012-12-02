@@ -69,9 +69,9 @@ class HTMLAnalyzer:
     externalUrls = [url for url in (unsafeUrls + safeUrls) if self.isExternalUrl(url)] 
 
     return {
-      'numChars': numChars,
+      'numCharacters': numChars,
       'percentWhitespace': self.getPercentage(numWhitespaceChars, numChars),
-      'percentScriptChars': self.getPercentage(numScriptChars, numChars),
+      'percentScriptContent': self.getPercentage(numScriptChars, numChars),
       'numIframes': self.countElems('iframe'),
       'numScripts': self.countElems('script'),
       'numScriptsWithWrongExtension': self.countElems('script', self.hasWrongExtension),
