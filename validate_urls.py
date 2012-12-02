@@ -8,10 +8,11 @@ import codecs
 logFile = codecs.open('error_log_validator.txt', 'a', 'utf-8')
 
 class UrlValidator(threading.Thread):
-    def __init__(self, url_queue, out_queue):
+    def __init__(self, url_queue, out_queue, my_num=0):
         threading.Thread.__init__(self)
         self.url_queue = url_queue
         self.out_queue = out_queue
+        self.my_num = my_num # debugging 
 
     def run(self):
         while True:
@@ -21,7 +22,7 @@ class UrlValidator(threading.Thread):
                     url = "http://%s" % url
                     
                 try:
-                    res = urllib2.urlopen(url)
+                    res = urllib2.urlopen(url, None, 5) # set timeout to 5 seconds
                     if res and res.code < 400:
                         self.out_queue.put(url)
                 except urllib2.HTTPError as e: # 4xx or 5xx
@@ -30,6 +31,7 @@ class UrlValidator(threading.Thread):
                     logFile.write("%s %s\n" % (url, str(e)))
             except Exception as e:
                 logFile.write("%s %s\n" % (url, str(e)))
+            
             self.url_queue.task_done()
 
 
@@ -72,6 +74,8 @@ def getCurrentUrls(validUrlsFile, errorsUrlFile):
             parts = line.strip().split(' ')
             if parts[0].startswith('http://') or parts[0].startswith('https://'):
                 retSet.add(parts[0])
+
+    
     return retSet
 
 def makeUrl(maybeDomain):
@@ -91,7 +95,7 @@ def fetchUrls(urlList, validatedFileName, threadCount=5):
     url_queue = Queue.Queue()
     output_queue = Queue.Queue()
     for i in range(threadCount):
-        validator = UrlValidator(url_queue, output_queue)
+        validator = UrlValidator(url_queue, output_queue, i)
         validator.setDaemon(True)
         validator.start()
 
@@ -112,7 +116,9 @@ if __name__ == '__main__':
 
         prevUrls = getCurrentUrls(outFile, 'error_log_validator.txt')
         urls = getMaliciousUrls(dbFile, prevUrls)
-        fetchUrls(urls, outFile, 8)
+        fetchUrls(urls, outFile, 10)
+    else:
+        print "usage: python validate_urls.py dbFile outfile"
 
         
 
