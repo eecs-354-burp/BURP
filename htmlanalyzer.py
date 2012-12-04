@@ -43,10 +43,16 @@ class HTMLAnalyzer:
 
   def __init__(self, url=''):
     if url:
-      self.setUrl(url)
-      # Use PyQuery's URL opener to properly handle content encoding
-      html = str( url_opener(url, {}).read() )
-      self.loadHtml(html)
+      self.loadUrl(url)
+
+  ##
+  # Loads the HTML at the given URL for analysis
+  ##
+  def loadUrl(self, url):
+    self.setUrl(url)
+    # Use PyQuery's URL opener to properly handle content encoding
+    html = str( url_opener(url, {}).read() )
+    self.loadHtml(html)
 
   ##
   # Loads the given HTML string for analysis

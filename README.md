@@ -13,11 +13,15 @@ Installation
 Usage
 -----
 
-BURP-HTML is optimized for analyzing URLs:
+The BURP HTML analyzer is optimized for retrieving and analyzing HTML from URLs:
 
     from htmlanalyzer import *
     analyzer = HTMLAnalyzer(url)
     analysis = analyzer.analyze()
+    ...
+    analyzer.loadUrl(url2)
+    analysis2 = analyzer.analyze()
+    ...
 
 To analyze an HTML string directly, be sure to call the `setUrl()` method with the URL where the HTML originated from:
 
