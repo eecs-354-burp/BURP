@@ -1,11 +1,13 @@
+#! /usr/bin/python
 ##
 # *BURP* HTML Analyzer
+# Prints an analysis of the given URL in JSON format
+# Usage: burp-html [URL]
 ##
 
-import os
-import sys
-import json
-from htmlanalyzer import *
+import os, sys, json
+
+from burphtml.analyzer import HTMLAnalyzer
 
 try:
   from urllib.request import URLError
@@ -25,3 +27,4 @@ except URLError:
   exit(1)
 
 print( json.dumps(analysis) )
+

@@ -57,6 +57,15 @@ The `analyze()` method returns a dictionary with the following format:
       "percentUnknownElements":       Float
     }
 
+Command-Line Usage
+-------------
+
+BURP-HTML installs a command-line script for analyzing URLs on the fly:
+
+    burp-html http://www.example.com
+
+This command prints the HTML analysis in JSON format.
+
 Running the Test Suite
 -------------
 
