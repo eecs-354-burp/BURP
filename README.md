@@ -24,7 +24,7 @@ To analyze an HTML string directly, be sure to call the `setUrl()` method with t
     from htmlanalyzer import *
     html = '<html>Hello World!</html>'
     analyzer = HTMLAnalyzer()
-    analyzer.load(html)
+    analyzer.loadHtml(html)
     analyzer.setUrl('http://www.example.com')
     analysis = analyzer.analyze()
 

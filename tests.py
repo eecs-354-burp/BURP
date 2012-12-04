@@ -14,12 +14,12 @@ class HTMLAnalyzerTestCase(unittest.TestCase):
   def loadFile(self, filename):
     f = open(filename, 'r')
     self.html = f.read()
-    self.analyzer.load(self.html)
+    self.analyzer.loadHtml(self.html)
 
 class TestExternalAPI(HTMLAnalyzerTestCase):
 
   def runTest(self):
-    self.analyzer.load('<html></html>')
+    self.analyzer.loadHtml('<html></html>')
     result = self.analyzer.analyze()
     self.assertTrue('numCharacters' in result)
     self.assertTrue('percentWhitespace' in result)
@@ -42,7 +42,7 @@ class TestElementCounting(HTMLAnalyzerTestCase):
 
   def setUp(self):
     HTMLAnalyzerTestCase.setUp(self)
-    self.analyzer.load('<html><body><div></div><div></div></body></html>')
+    self.analyzer.loadHtml('<html><body><div></div><div></div></body></html>')
 
   def test_CountRootElement(self):
     result = self.analyzer.countElems('html')
@@ -64,39 +64,39 @@ class TestElementCounting(HTMLAnalyzerTestCase):
 class TestCountWhitespaceChars(HTMLAnalyzerTestCase):
 
   def test_NoWhitespace(self):
-    self.analyzer.load('<html></html>')
+    self.analyzer.loadHtml('<html></html>')
     result = self.analyzer.countWhitespaceChars()
     self.assertEqual(result, 0)
 
   def test_LeadingSpaces(self):
-    self.analyzer.load('   <html></html>')
+    self.analyzer.loadHtml('   <html></html>')
     result = self.analyzer.countWhitespaceChars()
     self.assertEqual(result, 3)
 
   def test_TrailingSpaces(self):
-    self.analyzer.load('<html></html>    ')
+    self.analyzer.loadHtml('<html></html>    ')
     result = self.analyzer.countWhitespaceChars()
     self.assertEqual(result, 4)
 
   def test_InnerSpaces(self):
-    self.analyzer.load('<html>  <div> </div>  </html>')
+    self.analyzer.loadHtml('<html>  <div> </div>  </html>')
     result = self.analyzer.countWhitespaceChars()
     self.assertEqual(result, 5)
 
 class TestCountScriptChars(HTMLAnalyzerTestCase):
 
   def test_NoScripts(self):
-    self.analyzer.load('<html></html>')
+    self.analyzer.loadHtml('<html></html>')
     result = self.analyzer.countScriptChars()
     self.assertEqual(result, 0)
 
   def test_EmptyScript(self):
-    self.analyzer.load('<html><script></script></html>')
+    self.analyzer.loadHtml('<html><script></script></html>')
     result = self.analyzer.countScriptChars()
     self.assertEqual(result, 0)
 
   def test_InlineScript(self):
-    self.analyzer.load('<html><script>alert("abc")</script></html>')
+    self.analyzer.loadHtml('<html><script>alert("abc")</script></html>')
     result = self.analyzer.countScriptChars()
     self.assertEqual(result, 12)
 
@@ -245,39 +245,39 @@ class TestIsSmall(HTMLAnalyzerTestCase):
 class TestHasDoubleDocuments(HTMLAnalyzerTestCase):
 
   def test_NoDoubleDocuments(self):
-    self.analyzer.load('<html><head><title></title></head><body></body></html>')
+    self.analyzer.loadHtml('<html><head><title></title></head><body></body></html>')
     result = self.analyzer.hasDoubleDocuments()
     self.assertFalse(result)
 
   def test_DoubleHtml(self):
-    self.analyzer.load('<html></html><html></html>')
+    self.analyzer.loadHtml('<html></html><html></html>')
     result = self.analyzer.hasDoubleDocuments()
     self.assertTrue(result)
 
   def test_DoubleHead(self):
-    self.analyzer.load('<html><head></head><head></head></html>')
+    self.analyzer.loadHtml('<html><head></head><head></head></html>')
     result = self.analyzer.hasDoubleDocuments()
     self.assertTrue(result)
 
   def test_DoubleTitle(self):
-    self.analyzer.load('<html><head><title></title><title></title></head></html>')
+    self.analyzer.loadHtml('<html><head><title></title><title></title></head></html>')
     result = self.analyzer.hasDoubleDocuments()
     self.assertTrue(result)
 
   def test_DoubleBody(self):
-    self.analyzer.load('<html><body></body><body></body></html>')
+    self.analyzer.loadHtml('<html><body></body><body></body></html>')
     result = self.analyzer.hasDoubleDocuments()
     self.assertTrue(result)
 
 class TestGetAttrValues(HTMLAnalyzerTestCase):
 
   def test_NoAttributes(self):
-    self.analyzer.load('<div></div><div></div>')
+    self.analyzer.loadHtml('<div></div><div></div>')
     result = self.analyzer.getAttrValues('div', 'id')
     self.assertEqual(len(result), 0)
 
   def test_MultipleAttributes(self):
-    self.analyzer.load('<div id="a"></div><div id="b"></div>')
+    self.analyzer.loadHtml('<div id="a"></div><div id="b"></div>')
     result = self.analyzer.getAttrValues('div', 'id')
     self.assertTrue('a' in result)
     self.assertTrue('b' in result)
@@ -285,44 +285,44 @@ class TestGetAttrValues(HTMLAnalyzerTestCase):
 class TestGetUnsafeIncludedUrls(HTMLAnalyzerTestCase):
 
   def test_ScriptSrc(self):
-    self.analyzer.load('<script src="script.js"></script>')
+    self.analyzer.loadHtml('<script src="script.js"></script>')
     result = self.analyzer.getUnsafeIncludedUrls()
     self.assertTrue('script.js' in result)
 
   def test_IframeSrc(self):
-    self.analyzer.load('<iframe src="iframe.html"></iframe>')
+    self.analyzer.loadHtml('<iframe src="iframe.html"></iframe>')
     result = self.analyzer.getUnsafeIncludedUrls()
     self.assertTrue('iframe.html' in result)
 
   def test_FrameSrc(self):
-    self.analyzer.load('<body><frame src="frame.html"></body>')
+    self.analyzer.loadHtml('<body><frame src="frame.html"></body>')
     result = self.analyzer.getUnsafeIncludedUrls()
     self.assertTrue('frame.html' in result)
 
   def test_EmbedSrc(self):
-    self.analyzer.load('<embed src="embed.mov"></embed>')
+    self.analyzer.loadHtml('<embed src="embed.mov"></embed>')
     result = self.analyzer.getUnsafeIncludedUrls()
     self.assertTrue('embed.mov' in result)
 
   def test_FormAction(self):
-    self.analyzer.load('<form action="submit.php"></form>')
+    self.analyzer.loadHtml('<form action="submit.php"></form>')
     result = self.analyzer.getUnsafeIncludedUrls()
     self.assertTrue('submit.php' in result)
 
   def test_ObjectData(self):
-    self.analyzer.load('<object data="object.swf"></object>')
+    self.analyzer.loadHtml('<object data="object.swf"></object>')
     result = self.analyzer.getUnsafeIncludedUrls()
     self.assertTrue('object.swf' in result)
 
 class TestGetSafeIncludedUrls(HTMLAnalyzerTestCase):
 
   def test_ImgSrc(self):
-    self.analyzer.load('<img src="image.jpg" />')
+    self.analyzer.loadHtml('<img src="image.jpg" />')
     result = self.analyzer.getSafeIncludedUrls()
     self.assertTrue('image.jpg' in result)
 
   def test_LinkHref(self):
-    self.analyzer.load('<link href="style.css" />')
+    self.analyzer.loadHtml('<link href="style.css" />')
     result = self.analyzer.getSafeIncludedUrls()
     self.assertTrue('style.css' in result)
 
