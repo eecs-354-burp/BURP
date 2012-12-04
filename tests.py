@@ -373,14 +373,14 @@ class TestGetPercentage(HTMLAnalyzerTestCase):
 class TestCountSuspiciousObjects(HTMLAnalyzerTestCase):
 
   def test_UnsuspiciousObject(self):
-    self.analyzer.load('<object classid="AE7AB96B-FF5E-4dce-801E-14DF2C4CD681"></object>')
-    result = self.analyzer.countSuspiciousObjects()
-    self.assertEqual(result, 0)
+    elem = PyQuery('<object classid="clsid:AE7AB96B-FF5E-4dce-801E-14DF2C4CD681"></object>')
+    result = self.analyzer.isSuspiciousObject(elem)
+    self.assertEqual(result, False)
 
   def test_SuspiciousObject(self):
-    self.analyzer.load('<object classid="CA8A9780-280D-11CF-A24D-444553540000"></object>')
-    result = self.analyzer.countSuspiciousObjects()
-    self.assertEqual(result, 1)
+    elem = PyQuery('<object classid="clsid:CA8A9780-280D-11CF-A24D-444553540000"></object>')
+    result = self.analyzer.isSuspiciousObject(elem)
+    self.assertEqual(result, True)
 
 if __name__ == '__main__':
   unittest.main()

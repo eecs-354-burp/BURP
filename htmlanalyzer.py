@@ -25,6 +25,8 @@ class HTMLAnalyzer:
     'height': re.compile('height\s*:\s*([\.\d-]+)(?:px)?\s*(?:;|$)')
   }
 
+  findCLSID = re.compile('clsid:(.+)')
+
   findNumber = re.compile('([\.\d-]+)')
 
   findUrlDomain = re.compile('^(?:http[s]?|ftp):\/\/(?:www\.)?([^:\/\s]+)')
@@ -85,7 +87,7 @@ class HTMLAnalyzer:
       'numScriptsWithWrongExtension': self.countElems('script', self.hasWrongExtension),
       'numEmbeds': self.countElems('embed'),
       'numObjects': self.countElems('object'),
-      'numSuspiciousObjects': self.countSuspiciousObjects(),
+      'numSuspiciousObjects': self.countElems('object', self.isSuspiciousObject),
       'numHyperlinks': self.countElems('a'),
       'numMetaRefresh': self.countElems('meta', self.isMetaRefresh),
       'numHiddenElements': self.countElems('*', self.isHidden),
@@ -170,13 +172,6 @@ class HTMLAnalyzer:
     return False
 
   ##
-  # Returns the number of object elements with classids found in clsidlist
-  ##
-  def countSuspiciousObjects(self):
-    classids = self.getAttrValues('object', 'classid')
-    return len( [classid for classid in classids if classid in clsidlist] )
-
-  ##
   # PyQuery Filter Functions
   ##
 
@@ -187,6 +182,19 @@ class HTMLAnalyzer:
   def isMetaRefresh(self, this):
     httpEquiv = PyQuery(this).attr['http-equiv']
     return ( httpEquiv and httpEquiv.find('refresh') > -1 )
+
+  ##
+  # Returns true if the PyQuery element (this)
+  # has a classid found in clsidlist
+  ##
+  def isSuspiciousObject(self, this):
+    classidAttr = PyQuery(this).attr['classid']
+    if classidAttr:
+      match = self.findCLSID.match(classidAttr)
+      if match:
+        clsid = match.group(1)
+        return ( clsid and clsid in clsidlist )
+    return False
 
   ##
   # Returns true if the PyQuery element (this)
