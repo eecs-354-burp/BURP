@@ -16,7 +16,7 @@ def getWhoIs(dom):
   return ws.__dict__;
 
 def getHttpHeaders(arg):
-  httpServ = httlib.HTTPConnection(arg.netloc, 80, timeout=2)
+  httpServ = httplib.HTTPConnection(arg.netloc, 80, timeout=2)
   #httpServ.set_debuglevel(1)
   httpServ.connect()
   httpServ.request('GET', arg.path)
