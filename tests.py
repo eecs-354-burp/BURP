@@ -21,22 +21,22 @@ class TestExternalAPI(HTMLAnalyzerTestCase):
   def runTest(self):
     self.analyzer.load('<html></html>')
     result = self.analyzer.analyze()
-    self.assertIn('numCharacters', result)
-    self.assertIn('percentWhitespace', result)
-    self.assertIn('percentScriptContent', result)
-    self.assertIn('numIframes', result)
-    self.assertIn('numScripts', result)
-    self.assertIn('numScriptsWithWrongExtension', result)
-    self.assertIn('numEmbeds', result)
-    self.assertIn('numObjects', result)
-    self.assertIn('numHyperlinks', result)
-    self.assertIn('numMetaRefresh', result)
-    self.assertIn('numHiddenElements', result)
-    self.assertIn('numSmallElements', result)
-    self.assertIn('hasDoubleDocuments', result)
-    self.assertIn('numUnsafeIncludedUrls', result)
-    self.assertIn('numExternalUrls', result)
-    self.assertIn('percentUnknownElements', result)
+    self.assertTrue('numCharacters' in result)
+    self.assertTrue('percentWhitespace' in result)
+    self.assertTrue('percentScriptContent' in result)
+    self.assertTrue('numIframes' in result)
+    self.assertTrue('numScripts' in result)
+    self.assertTrue('numScriptsWithWrongExtension' in result)
+    self.assertTrue('numEmbeds' in result)
+    self.assertTrue('numObjects' in result)
+    self.assertTrue('numHyperlinks' in result)
+    self.assertTrue('numMetaRefresh' in result)
+    self.assertTrue('numHiddenElements' in result)
+    self.assertTrue('numSmallElements' in result)
+    self.assertTrue('hasDoubleDocuments' in result)
+    self.assertTrue('numUnsafeIncludedUrls' in result)
+    self.assertTrue('numExternalUrls' in result)
+    self.assertTrue('percentUnknownElements' in result)
 
 class TestElementCounting(HTMLAnalyzerTestCase):
 
@@ -279,52 +279,52 @@ class TestGetAttrValues(HTMLAnalyzerTestCase):
   def test_MultipleAttributes(self):
     self.analyzer.load('<div id="a"></div><div id="b"></div>')
     result = self.analyzer.getAttrValues('div', 'id')
-    self.assertIn('a', result)
-    self.assertIn('b', result)
+    self.assertTrue('a' in result)
+    self.assertTrue('b' in result)
 
 class TestGetUnsafeIncludedUrls(HTMLAnalyzerTestCase):
 
   def test_ScriptSrc(self):
     self.analyzer.load('<script src="script.js"></script>')
     result = self.analyzer.getUnsafeIncludedUrls()
-    self.assertIn('script.js', result)
+    self.assertTrue('script.js' in result)
 
   def test_IframeSrc(self):
     self.analyzer.load('<iframe src="iframe.html"></iframe>')
     result = self.analyzer.getUnsafeIncludedUrls()
-    self.assertIn('iframe.html', result)
+    self.assertTrue('iframe.html' in result)
 
   def test_FrameSrc(self):
     self.analyzer.load('<body><frame src="frame.html"></body>')
     result = self.analyzer.getUnsafeIncludedUrls()
-    self.assertIn('frame.html', result)
+    self.assertTrue('frame.html' in result)
 
   def test_EmbedSrc(self):
     self.analyzer.load('<embed src="embed.mov"></embed>')
     result = self.analyzer.getUnsafeIncludedUrls()
-    self.assertIn('embed.mov', result)
+    self.assertTrue('embed.mov' in result)
 
   def test_FormAction(self):
     self.analyzer.load('<form action="submit.php"></form>')
     result = self.analyzer.getUnsafeIncludedUrls()
-    self.assertIn('submit.php', result)
+    self.assertTrue('submit.php' in result)
 
   def test_ObjectData(self):
     self.analyzer.load('<object data="object.swf"></object>')
     result = self.analyzer.getUnsafeIncludedUrls()
-    self.assertIn('object.swf', result)
+    self.assertTrue('object.swf' in result)
 
 class TestGetSafeIncludedUrls(HTMLAnalyzerTestCase):
 
   def test_ImgSrc(self):
     self.analyzer.load('<img src="image.jpg" />')
     result = self.analyzer.getSafeIncludedUrls()
-    self.assertIn('image.jpg', result)
+    self.assertTrue('image.jpg' in result)
 
   def test_LinkHref(self):
     self.analyzer.load('<link href="style.css" />')
     result = self.analyzer.getSafeIncludedUrls()
-    self.assertIn('style.css', result)
+    self.assertTrue('style.css' in result)
 
 class TestIsExternalUrl(HTMLAnalyzerTestCase):
 
