@@ -3,6 +3,8 @@ BURP-HTML
 
 [PyQuery](http://pypi.python.org/pypi/pyquery)-based HTML analyzer for the Better URL Reputation Platform
 
+Tested on Python 2.6+ / 3.1+
+
 Installation
 ------------
 
