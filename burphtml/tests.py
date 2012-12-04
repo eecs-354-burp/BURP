@@ -1,9 +1,10 @@
 ##
-# Tests for HTML Analysis Library
+# Test Suite for HTMLAnalyzer Class
 ##
 
-from htmlanalyzer import *
 import unittest
+
+from burphtml.analyzer import HTMLAnalyzer, PyQuery
 
 class HTMLAnalyzerTestCase(unittest.TestCase):
 
