@@ -80,28 +80,27 @@ class InfoFetch(threading.Thread):
                 if domain == "":
                     domain = url #hack
                 try: # whois and headers
-                    whois_dict = burp_url.whois_headers(url, domain)
-                    if whois_dict['httpheaders'] is not None:
-                        headers = whois_dict['httpheaders']
-                        if "Cache-Control" in headers:
-                            info['cache_control'] = headers['Cache-Control']
-                        if "Expires" in headers:
-                            info['expires'] = headers['Expires']
-                        if "Content-Type" in headers:
-                            info['content_type'] = headers['Content-Type']
-                        if "Server" in headers:
-                            info['server'] = headers['Server']
-                        if "Transfer-Encoding" in headers:
-                            info['transfer_encoding'] = headers['transfer_encoding']
+                    headers = burp_url.getheadersonly(url).dict
+                    if "cache-control" in headers:
+                        info['cache_control'] = headers['cache-control']
+                    if "expires" in headers:
+                        info['expires'] = headers['expires']
+                    if "content-type" in headers:
+                        info['content_type'] = headers['content-type']
+                    if "server" in headers:
+                        info['server'] = headers['server']
+                    if "transfer-encoding" in headers:
+                        info['transfer_encoding'] = headers['transfer-encoding']
+                 
+                    info['ip_address'] = burp_url.getIpAddr(domain)
 
-                    if whois_dict['whois'] is not None:
-                        whois = whois_dict['whois']
+                    domain = str(domain)
+                    whois = burp_url.getWhoIs(domain)
+                    if whois is not None:
                         for key, value in whois.iteritems():
                             if info.is_valid_key(key):
                                 info[key] = str(value)
-
-                    if whois_dict['ip'] is not None:
-                        info['ip_address'] = whois_dict['ip']
+                    
                 except Exception as e:
                     logFile.write('whois, %s, %s\n' % (url, str(e)))
 
@@ -277,7 +276,15 @@ def getBenignUrls(dbFile, limit=None):
     
     return [makeUrl(u[0]) for u in urls]
 
-
+def getUrlsAlreadyProcessed(dbFile):
+    conn = sqlite3.connect(dbFile)
+    curs = conn.cursor()
+    urls = curs.execute('select url from url_info').fetchall()
+    conn.close()
+    ret = set()
+    for u in urls:
+        ret.add(u[0])
+    return ret
 
 def getUrlsToProcess(the_good, the_bad, count=None):
     """
@@ -329,6 +336,12 @@ if __name__ == '__main__':
         _, dbFile, numThreads = sys.argv
         
         urls = getUrlsToProcess(benign_url_file, malicious_url_file)
+        #usedUrls = getUrlsAlreadyProcessed('url_info.db')
+        #proc_urls = []
+        #for u in urls:
+            #if u[0] not in proc_urls:
+                #proc_urls.append(u)
+
         fetchUrls(urls, dbFile, int(numThreads))
     else:
         print "usage: python process_urls.py dbFile numThreads"
