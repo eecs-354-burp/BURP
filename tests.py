@@ -344,17 +344,17 @@ class TestIsExternalUrl(HTMLAnalyzerTestCase):
     result = self.analyzer.isExternalUrl('http://www.google.com')
     self.assertTrue(result)
 
-class TestCountUnknownElements(HTMLAnalyzerTestCase):
+class TestIsUnknownElement(HTMLAnalyzerTestCase):
 
-  def test_KnownElements(self):
-    self.analyzer.load('<html><div></div></html>')
-    result = self.analyzer.countUnknownElements()
-    self.assertEqual(result, 0)
+  def test_KnownElement(self):
+    elem = PyQuery('<html></html>')
+    result = self.analyzer.isUnknownElement(elem)
+    self.assertFalse(result)
 
-  def test_UnknownElements(self):
-    self.analyzer.load('<html><unknown></unknown><test></test></html>')
-    result = self.analyzer.countUnknownElements()
-    self.assertEqual(result, 2)
+  def test_UnknownElement(self):
+    elem = PyQuery('<invalidElement></invalidElement>')
+    result = self.analyzer.isUnknownElement(elem)
+    self.assertTrue(result)
 
 class TestGetPercentage(HTMLAnalyzerTestCase):
   

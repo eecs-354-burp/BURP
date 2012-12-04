@@ -29,7 +29,7 @@ class HTMLAnalyzer:
 
   findUrlDomain = re.compile('^(?:http[s]?|ftp):\/\/(?:www\.)?([^:\/\s]+)')
 
-  isKnownElement = re.compile('^(?:a|abbr|acronym|address|applet|area|article|aside|audio|b|base|basefont|bdi|bdo|big|blockquote|body|br|button|canvas|caption|center|cite|code|col|colgroup|command|datalist|dd|del|details|dfn|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|keygen|label|legend|li|link|map|mark|menu|meta|meter|nav|nobr|noframes|noscript|object|ol|optgroup|option|output|p|param|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|source|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video|wbr)$')
+  knownElements = [ 'a', 'abbr', 'acronym', 'address', 'applet', 'area', 'article', 'aside', 'audio', 'b', 'base', 'basefont', 'bdi    ', 'bdo', 'big', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'command', 'datalist', 'dd', 'del', 'details    ', 'dfn', 'dir', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'frame', 'frameset', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'h    eader', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'map', 'mark', 'menu', 'meta', 'meter', 'nav', 'nobr', 'n    oframes', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'selec    t', 'small', 'source', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'tr    ack', 'tt', 'u', 'ul', 'var', 'video', 'wbr' ]
 
   smallElementAreaThreshold = 30; # px ^ 2
 
@@ -69,9 +69,8 @@ class HTMLAnalyzer:
     numWhitespaceChars = self.countWhitespaceChars()
     numScriptChars = self.countScriptChars()
 
-    elems = self.doc('*')
-    numElements = len( elems )
-    numUnknownElements = self.countUnknownElements()
+    numElements = len( self.doc('*') )
+    numUnknownElements = self.countElems('*', self.isUnknownElement)
 
     unsafeUrls = self.getUnsafeIncludedUrls()
     safeUrls = self.getSafeIncludedUrls()
@@ -171,12 +170,6 @@ class HTMLAnalyzer:
     return False
 
   ##
-  # Returns the number of unknown HTML elements
-  ##
-  def countUnknownElements(self):
-    return len( [elem for elem in self.doc('*') if not self.isKnownElement.match(elem.tag)] )
-
-  ##
   # Returns the number of object elements with classids found in clsidlist
   ##
   def countSuspiciousObjects(self):
@@ -224,6 +217,12 @@ class HTMLAnalyzer:
     else:
       return ( (width != None and (width < self.smallElementDimensionThreshold)) or
                (height != None and (height < self.smallElementDimensionThreshold)) )
+
+  ##
+  # Returns true if the PyQuery element (this) is a valid HTML element
+  ##
+  def isUnknownElement(self, this):
+    return ( len(this) > 0 ) and ( this[0].tag not in self.knownElements )
 
   ##
   # URL-Analysis Methods
