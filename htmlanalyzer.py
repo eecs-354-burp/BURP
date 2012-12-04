@@ -87,7 +87,7 @@ class HTMLAnalyzer:
       'numObjects': self.countElems('object'),
       'numSuspiciousObjects': self.countSuspiciousObjects(),
       'numHyperlinks': self.countElems('a'),
-      'numMetaRefresh': self.countElems('meta', self.isRefresh),
+      'numMetaRefresh': self.countElems('meta', self.isMetaRefresh),
       'numHiddenElements': self.countElems('*', self.isHidden),
       'numSmallElements': self.countElems('*', self.isSmall),
       'hasDoubleDocuments': self.hasDoubleDocuments(),
@@ -184,7 +184,7 @@ class HTMLAnalyzer:
   # Returns true if the PyQuery element (this)
   # has an "http-equiv" attribute with a value of "refresh"
   ##
-  def isRefresh(self, this):
+  def isMetaRefresh(self, this):
     httpEquiv = PyQuery(this).attr['http-equiv']
     return ( httpEquiv and httpEquiv.find('refresh') > -1 )
 

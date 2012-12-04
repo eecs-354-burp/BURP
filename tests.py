@@ -117,21 +117,21 @@ class TestHasWrongExtension(HTMLAnalyzerTestCase):
     result = self.analyzer.hasWrongExtension(elem)
     self.assertTrue(result)
 
-class TestIsRefresh(HTMLAnalyzerTestCase):
+class TestIsMetaRefresh(HTMLAnalyzerTestCase):
 
   def test_MetaNoRefresh(self):
     elem = PyQuery('<meta></meta>')
-    result = self.analyzer.isRefresh(elem)
+    result = self.analyzer.isMetaRefresh(elem)
     self.assertFalse(result)
 
   def test_MetaWithHttpEquivAttribute(self):
     elem = PyQuery('<meta http-equiv="content-type"></meta>')
-    result = self.analyzer.isRefresh(elem)
+    result = self.analyzer.isMetaRefresh(elem)
     self.assertFalse(result)
 
   def test_MetaWithRefresh(self):
     elem = PyQuery('<meta http-equiv="refresh"></meta>')
-    result = self.analyzer.isRefresh(elem)
+    result = self.analyzer.isMetaRefresh(elem)
     self.assertTrue(result)
 
 class TestIsHidden(HTMLAnalyzerTestCase):
