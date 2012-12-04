@@ -33,9 +33,9 @@ class HTMLAnalyzer:
 
   knownElements = [ 'a', 'abbr', 'acronym', 'address', 'applet', 'area', 'article', 'aside', 'audio', 'b', 'base', 'basefont', 'bdi    ', 'bdo', 'big', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'command', 'datalist', 'dd', 'del', 'details    ', 'dfn', 'dir', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'frame', 'frameset', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'h    eader', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'map', 'mark', 'menu', 'meta', 'meter', 'nav', 'nobr', 'n    oframes', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'selec    t', 'small', 'source', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'tr    ack', 'tt', 'u', 'ul', 'var', 'video', 'wbr' ]
 
-  smallElementAreaThreshold = 30; # px ^ 2
+  smallElementAreaThreshold = 30 # px ^ 2
 
-  smallElementDimensionThreshold = 2; # px
+  smallElementDimensionThreshold = 2 # px
 
   ##
   # Initialization Methods
@@ -201,16 +201,16 @@ class HTMLAnalyzer:
   # has a "src" attribute that points to a URI without a "js" extension
   ##
   def hasWrongExtension(self, this):
-    src = PyQuery(this).attr['src'];
-    return ( src and (self.findJsExtension.search(src) == None) );
+    src = PyQuery(this).attr['src']
+    return ( src and (self.findJsExtension.search(src) == None) )
 
   ##
   # Returns true if the PyQuery element (this)
   # has its CSS style set to "display: none" or "visibility: hidden"
   ##
   def isHidden(self, this):
-    style = PyQuery(this).attr['style'];
-    return ( style and (self.findHiddenStyle.search(style) != None) );
+    style = PyQuery(this).attr['style']
+    return ( style and (self.findHiddenStyle.search(style) != None) )
 
   ##
   # Returns true if the area, width, or height of the PyQuery element (this)
@@ -221,7 +221,7 @@ class HTMLAnalyzer:
     width = self.getDimension(elem, 'width')
     height = self.getDimension(elem, 'height')
     if (width != None) and (height != None):
-      return (width * height) < self.smallElementAreaThreshold;
+      return (width * height) < self.smallElementAreaThreshold
     else:
       return ( (width != None and (width < self.smallElementDimensionThreshold)) or
                (height != None and (height < self.smallElementDimensionThreshold)) )
