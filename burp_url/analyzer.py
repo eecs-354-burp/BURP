@@ -2,7 +2,7 @@ import socket
 import whois
 import sys
 from pprint import pprint
-import tokenizer
+from burp_url.tokenizer import get_tokens
 
 try:
   from http.client import HTTPConnection
@@ -25,7 +25,7 @@ except ImportError:
   from urllib2 import HTTPError
 
 def getDomain(url):
-  tokens = tokenizer.get_tokens(url)
+  tokens = get_tokens(url)
   return tokens[1]
 
 def getWhoIs(dom):
