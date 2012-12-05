@@ -4,7 +4,7 @@ import whois
 import sys
 from pprint import pprint
 from urlparse import urlparse
-import urlTokenizer
+import tokenizer
 
 def getDomain(url):
   tokens = urlTokenizer.get_tokens(url)
