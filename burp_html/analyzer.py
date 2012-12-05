@@ -8,7 +8,7 @@ from lxml import etree
 
 # Import list of suspicious object classids from PhoneyC
 # (http://code.google.com/p/phoneyc/)
-from CLSID import clsidlist
+from burp_html.CLSID import clsidlist
 
 import re
 
