@@ -1,5 +1,9 @@
-from urlparse import urlsplit
 import sys
+
+try:
+  from urllib.parse import urlsplit
+except ImportError:
+  from urlparse import urlsplit
 
 my_tld_file = "tlds.txt"
 

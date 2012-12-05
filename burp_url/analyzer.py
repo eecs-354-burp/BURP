@@ -1,13 +1,31 @@
-import httplib
 import socket
 import whois
 import sys
 from pprint import pprint
-from urlparse import urlparse
 import tokenizer
 
+try:
+  from http.client import HTTPConnection
+except ImportError:
+  from httplib import HTTPConnection
+
+try:
+  from urllib.request import Request, OpenerDirector, HTTPHandler, HTTPDefaultErrorHandler, HTTPErrorProcessor, HTTPRedirectHandler
+except ImportError:
+  from urllib2 import Request, OpenerDirector, HTTPHandler, HTTPDefaultErrorHandler, HTTPErrorProcessor, HTTPRedirectHandler
+
+try:
+  from urllib.parse import urlparse
+except ImportError:
+  from urlparse import urlparse
+
+try:
+  from urllib.error import HTTPError
+except ImportError:
+  from urllib2 import HTTPError
+
 def getDomain(url):
-  tokens = urlTokenizer.get_tokens(url)
+  tokens = tokenizer.get_tokens(url)
   return tokens[1]
 
 def getWhoIs(dom):
@@ -15,27 +33,27 @@ def getWhoIs(dom):
   #print(ws);
   return ws.__dict__;
 
-class HeadRequest(urllib2.Request):
+class HeadRequest(Request):
     def get_method(self):
         return 'HEAD'
 
 def getheadersonly(url, redirections=True):
-    opener = urllib2.OpenerDirector()
-    opener.add_handler(urllib2.HTTPHandler())
-    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
+    opener = OpenerDirector()
+    opener.add_handler(HTTPHandler())
+    opener.add_handler(HTTPDefaultErrorHandler())
     if redirections:
         # HTTPErrorProcessor makes HTTPRedirectHandler work
-        opener.add_handler(urllib2.HTTPErrorProcessor())
-        opener.add_handler(urllib2.HTTPRedirectHandler())
+        opener.add_handler(HTTPErrorProcessor())
+        opener.add_handler(HTTPRedirectHandler())
     try:
         res = opener.open(HeadRequest(url))
-    except urllib2.HTTPError, res:
+    except HTTPError as res:
         pass
     res.close()
     return res.info()
 
 def getHttpHeaders(arg):
-  httpServ = httplib.HTTPConnection(arg.netloc, 80, timeout=2)
+  httpServ = HTTPConnection(arg.netloc, 80, timeout=2)
   #httpServ.set_debuglevel(1)
   httpServ.connect()
   httpServ.request('GET', arg.path)
