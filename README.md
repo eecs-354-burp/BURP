@@ -15,7 +15,7 @@ Usage
 
 The BURP HTML analyzer is optimized for retrieving and analyzing HTML from URLs:
 
-    from burphtml.analyzer import HTMLAnalyzer
+    from burp_html.analyzer import HTMLAnalyzer
     analyzer = HTMLAnalyzer(url)
     analysis = analyzer.analyze()
     ...
@@ -25,7 +25,7 @@ The BURP HTML analyzer is optimized for retrieving and analyzing HTML from URLs:
 
 To analyze an HTML string directly, be sure to call the `setUrl()` method with the URL where the HTML originated from:
 
-    from burphtml.analyzer import HTMLAnalyzer
+    from burp_html.analyzer import HTMLAnalyzer
     html = '<html>Hello World!</html>'
     analyzer = HTMLAnalyzer()
     analyzer.loadHtml(html)

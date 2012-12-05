@@ -4,7 +4,7 @@
 
 import unittest
 
-from burphtml.analyzer import HTMLAnalyzer, PyQuery
+from burp_html.analyzer import HTMLAnalyzer, PyQuery
 
 class HTMLAnalyzerTestCase(unittest.TestCase):
 

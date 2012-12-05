@@ -8,6 +8,6 @@ setup(
   version = '0.1',
   packages = find_packages(),
   scripts = ['burp-html'],
-  test_suite = 'burphtml.tests',
+  test_suite = 'burp_html.tests',
   install_requires = ['pyquery>=1.2.4']
 )
