@@ -105,4 +105,9 @@ def whois_headers(url, domain):
   return res;  
 
 if __name__ == "__main__":
-    main()
+  if not len(sys.argv) == 2:
+    print("Usage: " + sys.argv[0] + " [URL]")
+    exit(1)
+  url = sys.argv[1]
+  domain = getDomain(url)
+  print( whois_headers(url, domain) )
