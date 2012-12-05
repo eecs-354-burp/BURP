@@ -4,9 +4,9 @@ import urllib2
 import threading
 import Queue
 import codecs
-import htmlanalyzer # ethan's file in BURP-HTML
-import urlTokenizer # peter's file in BURP-URL
-import burp_url 
+from burp_html.analyzer import HTMLAnalyzer # Ethan's file in BURP-HTML
+from burp_url import tokenizer # Peter's file in BURP-URL
+from burp_url import analyzer
 
 logFile = codecs.open('error_log_fetcher.txt', 'a', 'utf-8')
 
