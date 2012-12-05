@@ -1,22 +1,12 @@
 import sys
+from burp_url.TLD import tlds
 
 try:
   from urllib.parse import urlsplit
 except ImportError:
   from urlparse import urlsplit
 
-my_tld_file = "tlds.txt"
-
-def get_tlds(tld_file):
-# load tlds, ignore comments and empty lines:
-    tlds = set()
-    with open(tld_file) as tld_file:
-        for line in tld_file:
-            if line[0] not in "/\n":
-                tlds.add(line.strip())
-    return tlds
-
-def get_tokens_from_tlds(url, tlds):
+def get_tokens(url):
     """Returns a 4 tuple of sub-domain, domain, port, path"""
     parsed = urlsplit(url)
     path_and_port = parsed[1].split(':')
@@ -46,16 +36,6 @@ def get_tokens_from_tlds(url, tlds):
 
     subdomain = path_and_port[0].replace(domain, "").strip('.')
     return (subdomain, domain, parsed.port, parsed.path)
-
-def tld_closure(tld_file):
-    tlds = get_tlds(tld_file)
-    def wrapped_tokens(url):
-        return get_tokens_from_tlds(url, tlds)
-    return wrapped_tokens
-
-get_tokens = tld_closure(my_tld_file)
-    
-
 
 def parseURL(arg):
     url = arg;
@@ -104,6 +84,3 @@ def parseURL(arg):
     return tokenizedURL;
 	
 #example
-
-	
-
