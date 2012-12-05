@@ -15,6 +15,25 @@ def getWhoIs(dom):
   #print(ws);
   return ws.__dict__;
 
+class HeadRequest(urllib2.Request):
+    def get_method(self):
+        return 'HEAD'
+
+def getheadersonly(url, redirections=True):
+    opener = urllib2.OpenerDirector()
+    opener.add_handler(urllib2.HTTPHandler())
+    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
+    if redirections:
+        # HTTPErrorProcessor makes HTTPRedirectHandler work
+        opener.add_handler(urllib2.HTTPErrorProcessor())
+        opener.add_handler(urllib2.HTTPRedirectHandler())
+    try:
+        res = opener.open(HeadRequest(url))
+    except urllib2.HTTPError, res:
+        pass
+    res.close()
+    return res.info()
+
 def getHttpHeaders(arg):
   httpServ = httplib.HTTPConnection(arg.netloc, 80, timeout=2)
   #httpServ.set_debuglevel(1)
