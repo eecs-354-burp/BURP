@@ -6,14 +6,14 @@ URL, HTTP Headers and WHOIS analyzer for the Better URL Reputation Platform
 Tested on Python 2.6+ / 3.1+
 
 
-Installation Pre-requisites
--------------
+Installation
+------------
 
-The directory contains a folder called `python-whois`. Please navigate to that folder and install the python-whois module using:
+1. Install the BURP fork of python-whois (https://github.com/eecs-354-burp/python-whois) 
+
+2. Execute the following command:
 
         python setup.py install
-
-before using burp_url.py
 
 
 API
@@ -41,4 +41,4 @@ Command-Line Usage
 
 BURP-HTML can be run from the command line like so:
 
-    python burp-url.py http://www.example.com
+    python burp_url/analyzer.py http://www.example.com
