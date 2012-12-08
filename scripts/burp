@@ -1,0 +1,167 @@
+#!/usr/bin/env python
+##
+# BURP
+# The Better URL Reputation Platform
+# Usage: burp [URL]
+##
+
+import sys, os, re, arff
+from subprocess import Popen, PIPE, STDOUT
+from burp.html import HTMLAnalyzer
+from burp.url import getTokens
+from burp.url import getHttpHeaders, getIpAddr, getWhoIs
+
+try:
+  from urllib.request import URLError
+except ImportError:
+  from urllib2 import URLError
+
+WEKA_MODEL = 'weka/J48.model'
+WEKA_TRAINING_SET = 'weka/training_set.arff'
+WEKA_TEST_SET = 'weka/test_set.arff'
+
+if not len(sys.argv) == 2:
+  print("Usage: burp [URL]")
+  exit(1)
+
+##
+# Extract Features
+##
+
+url = sys.argv[1]
+url = url.strip(',') # saw in log file a lot
+analysis = {}
+
+print("Analyzing HTML ...")
+try: # html analysis
+  html = HTMLAnalyzer(url)
+  analysis = html.analyze()
+except Exception as e:
+  print('ERROR: HTML Analysis, %s, %s\n' %(url, e))
+  exit(1)
+  
+print("Analyzing URL ...")
+domain = ""
+try: # tokenizer
+  tokens = getTokens(url)
+  subdomain = tokens[0]
+  analysis['subdomain'] = subdomain
+  analysis['number_subdomains'] = subdomain.count('.') + 1
+  analysis['subdomain_length'] = len(subdomain)
+
+  domain = tokens[1]
+  analysis['domain'] = domain
+  analysis['domain_length'] = len(domain)
+
+  analysis['port'] = tokens[2]
+  analysis['path'] = tokens[3]
+except Exception as e:
+  print('ERROR: Tokenizer, %s, %s\n' % (url, str(e)))
+  exit(1)
+
+if domain == "":
+  domain = url #hack
+
+print("Analyzing HTTP headers ...")
+headers = getHttpHeaders(url)
+if headers.__contains__("cache-control"):
+    analysis['cache_control'] = headers['cache-control']
+if headers.__contains__("expires"):
+    analysis['expires'] = headers['expires']
+if headers.__contains__("content-type"):
+    analysis['content_type'] = headers['content-type']
+if headers.__contains__("server"):
+    analysis['server'] = headers['server']
+if headers.__contains__("transfer-encoding"):
+    analysis['transfer_encoding'] = headers['transfer-encoding']
+
+ipAddress = getIpAddr(domain)
+analysis['ip_address'] = ipAddress
+
+if ipAddress is not None:
+  findFirstOctet = re.compile('^(\d+)')
+  analysis['ip_address_a'] = findFirstOctet.search(ipAddress).group(1)
+
+print("Analyzing WHOIS information ...")
+whois = getWhoIs(domain)
+if whois is not None:
+  for key, value in whois.items():
+    analysis[key] = str(value)
+
+##
+# Export Feature Analysis to ARFF File
+##
+
+arffData = dict(
+  relation = 'test_set',
+  attributes = [
+    ('ISBAD', ['FALSE', 'TRUE']),
+    ('HTML_NUMCHARACTERS', 'NUMERIC'),
+    ('HTML_PERCENTSCRIPTCONTENT', 'NUMERIC'),
+    ('HTML_PERCENTWHITESPACE', 'NUMERIC'),
+    ('HTML_PERCENTUNOWNELEMENTS', 'NUMERIC'),
+    ('HTML_NUMSCRIPTS', 'NUMERIC'),
+    ('HTML_NUMSCRIPTSWRONGEXTENTION', 'NUMERIC'),
+    ('HTML_NUMBERIFRAMES', 'NUMERIC'),
+    ('HTML_NUMUNSAFEINCLUDEDURL', 'NUMERIC'),
+    ('IP_ADDRESS_A', 'NUMERIC'),
+    ('TOKEN_SUBDOMAIN_LENGTH', 'NUMERIC'),
+    ('TOKEN_NUMBER_SUBDOMAINS', 'NUMERIC'),
+    ('TOKEN_DOMAIN_LENGTH', 'NUMERIC')
+  ],
+  data = [[
+    None, # ISBAD, the value to be predicted
+    analysis['numCharacters'],
+    analysis['percentScriptContent'],
+    analysis['percentWhitespace'],
+    analysis['percentUnknownElements'],
+    analysis['numScripts'],
+    analysis['numScriptsWithWrongExtension'],
+    analysis['numIframes'],
+    analysis['numUnsafeIncludedUrls'], 
+    analysis['ip_address_a'],
+    analysis['subdomain_length'],
+    analysis['number_subdomains'],
+    analysis['domain_length']
+  ]]
+)
+testSetFile = open(WEKA_TEST_SET, 'w')
+arff.dump(testSetFile, arffData)
+testSetFile.close()
+
+##
+# Invoke Weka to classify the URL
+##
+
+print("Making prediction ...")
+p = Popen(['java',
+  'weka.classifiers.misc.InputMappedClassifier',
+  '-L', WEKA_MODEL,
+  '-t', WEKA_TRAINING_SET,
+  '-T', WEKA_TEST_SET,
+  '-M', # Suppress the output of the mapping report
+  '-classifications', 'weka.classifiers.evaluation.output.prediction.CSV'],
+  stdout=PIPE,
+  stderr=STDOUT)
+output = p.communicate()[0]
+lines = output.decode().splitlines()
+
+if p.returncode != 0:
+  # Print error messages and exit
+  for line in lines:
+    print(line)
+  exit(p.returncode)
+
+# The result is found in the 3rd column of the 6th line of Weka's CSV output.
+# It has the format "X:BOOL", where X is an integer class index and BOOL is "TRUE" or "FALSE".
+# (See http://weka.wikispaces.com/Making+predictions for more details)
+# The line below extracts the BOOL substring.
+result = lines[5].split(',')[2][2:]
+if (result == 'TRUE'):
+  classification = 'MALICIOUS'
+else:
+  classification = 'BENIGN'
+print(url + ' is ' + classification)
+
+# Delete the generated ARFF file
+os.remove(WEKA_TEST_SET)
