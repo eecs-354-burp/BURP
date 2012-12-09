@@ -6,6 +6,7 @@ from setuptools import setup, find_packages
 setup(
   name = 'BURP-HTML',
   version = '0.1',
+  url = 'https://github.com/eecs-354-burp/BURP-HTML',
   packages = find_packages(),
   scripts = ['burp-html'],
   test_suite = 'burp_html.tests',
