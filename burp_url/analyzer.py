@@ -2,7 +2,7 @@ import socket
 import whois
 import sys
 from pprint import pprint
-from burp_url.tokenizer import get_tokens
+from burp_url.tokenizer import getTokens
 
 try:
   from http.client import HTTPConnection
@@ -24,82 +24,66 @@ try:
 except ImportError:
   from urllib2 import HTTPError
 
-def getDomain(url):
-  tokens = get_tokens(url)
-  return tokens[1]
 
 def getWhoIs(dom):
+  """Return a dictionary of whois infomation
+  Will throw exception if tld server not known, or query limit reached
+  """
   ws = whois.query(dom)
   #print(ws);
   return ws.__dict__;
 
 class HeadRequest(Request):
-    def get_method(self):
-        return 'HEAD'
+  """Make a HEAD request for a given url, inherits from urllib.request.Request"""
+  def get_method(self):
+    return 'HEAD'
 
-def getheadersonly(url, redirections=True):
-    opener = OpenerDirector()
-    opener.add_handler(HTTPHandler())
-    opener.add_handler(HTTPDefaultErrorHandler())
-    if redirections:
-        # HTTPErrorProcessor makes HTTPRedirectHandler work
-        opener.add_handler(HTTPErrorProcessor())
-        opener.add_handler(HTTPRedirectHandler())
-    try:
-        res = opener.open(HeadRequest(url))
-    except HTTPError as res:
-        pass
-    res.close()
-    return res.info()
+def getHttpHeaders(url, redirections=True):
+  """Return a dictionary of the headers for the site at url"""
+  opener = OpenerDirector()
+  opener.add_handler(HTTPHandler())
+  opener.add_handler(HTTPDefaultErrorHandler())
+  if redirections:
+    # HTTPErrorProcessor makes HTTPRedirectHandler work
+    opener.add_handler(HTTPErrorProcessor())
+    opener.add_handler(HTTPRedirectHandler())
+  try:
+    res = opener.open(HeadRequest(url))
+  except HTTPError as res:
+    pass
+  res.close()
+  return res.info().dict
 
-def getHttpHeaders(arg):
-  httpServ = HTTPConnection(arg.netloc, 80, timeout=2)
-  #httpServ.set_debuglevel(1)
-  httpServ.connect()
-  httpServ.request('GET', arg.path)
-  
-  response = httpServ.getresponse()
-  headers = response.getheaders();
-  
-  httpServ.close()
-  
-  if (response.status == "302"):
-    return getHttpHeaders(headers["Location"])
-  
-  return headers;
 
 def getIpAddr(dom):
+  """Return the ip address of the domain"""
   return socket.gethostbyname(dom);
 
-def parseUrl(arg):
-  url = urlparse(arg);
-  #pprint(url);
-  return url;
 
-
-def whois_headers(url, domain):
-  arg = parseUrl(url);
+def allInfo(url):
+  """Returns a dict of http headers, ip address, and whois information"""
+  domain = getTokens(url)[1]
+  arg = urlparse(url)
   
-  httpHeaders = None;
-  ip = None;
-  whois = None;
+  httpHeaders = None
+  ip = None
+  whois = None
   try:
-    ip = getIpAddr(domain);
+    ip = getIpAddr(domain)
   except Exception as e:
     pass
   
   try:
-    httpHeaders = getHttpHeaders(arg);
+    httpHeaders = getHttpHeaders(url)
   except Exception as e:
     pass
   
   try:
-    if (ip != None):
-      whois = getWhoIs(domain);
+    if ip is not None:
+      whois = getWhoIs(domain)
   except Exception as e:
     pass
   
-  #iptwhois = getWhoIs(domain);
   
   res = {"httpheaders" : httpHeaders, "whois" : whois, "ip" : ip};
   return res;  
@@ -109,5 +93,5 @@ if __name__ == "__main__":
     print("Usage: " + sys.argv[0] + " [URL]")
     exit(1)
   url = sys.argv[1]
-  domain = getDomain(url)
+  domain = getTokens(url)[1]
   print( whois_headers(url, domain) )
