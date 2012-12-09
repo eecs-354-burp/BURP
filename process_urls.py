@@ -4,16 +4,15 @@ import urllib2
 import threading
 import Queue
 import codecs
-from burp_html.analyzer import HTMLAnalyzer # Ethan's file in BURP-HTML
-from burp_url import tokenizer # Peter's file in BURP-URL
-from burp_url import analyzer
+import burp.html
+import burp.url 
+
 
 logFile = codecs.open('error_log_fetcher.txt', 'a', 'utf-8')
 
 class UrlInfo(dict):
-    """
-    UrlInfo is a dictionary with a restricted key set
-    """
+    """UrlInfo is a dictionary with a restricted key set, defaults keys to None"""
+
     _valid_keys = set(['url', 'isBad', 'numCharacters','percentWhitespace', 'percentScriptContent', 
                        'numIframes', 'numScripts', 'numScriptsWithWrongExtension', 'numEmbeds', 
                        'numObjects', 'numHyperlinks','numMetaRefresh', 'numHiddenElements', 
@@ -39,26 +38,31 @@ class UrlInfo(dict):
     def valid_keys(self):
         return UrlInfo._valid_keys.copy()
 
+class BurpUrl(object):
+    """Holder for url and flag telling if malicious"""
+    def __init__(self, url, isBad=False):
+        self.url = url
+        self.isBad = isBad
 
 class InfoFetch(threading.Thread):
+    """Fetches features for a url, reads from url_queue, outputs info to out_queue"""
     def __init__(self, url_queue, out_queue, my_num=0):
         threading.Thread.__init__(self)
-        super(threading.Thread, self).__init__()
         self.url_queue = url_queue
         self.out_queue = out_queue
         self.my_num = my_num # debugging 
 
     def run(self):
         while True:
-            url_pair = self.url_queue.get()
+            burp_url = self.url_queue.get()
             try: #paranoia
-                url, isBad = url_pair
-                url = url.strip(',') # saw in log file a lot
+                url, isBad = (burp_url.url, burp_url.isBad)
+
                 info = UrlInfo(url, isBad)
                 # okay want to isolate errors as much as possible
 
                 try: # html analysis
-                    html = htmlanalyzer.HTMLAnalyzer(url)
+                    html = burp.html.HTMLAnalyzer(url)
                     html_data = html.analyze()
                     for key, value in html_data.iteritems():
                         info[key] = value
@@ -67,7 +71,7 @@ class InfoFetch(threading.Thread):
                     
                 domain = ""
                 try: # tokenizer
-                    tokens = urlTokenizer.get_tokens(url)
+                    tokens = burp.url.getTokens(url)
                     info['subdomain'] = tokens[0]
                     info['domain'] = tokens[1]
                     domain = tokens[1]
@@ -80,7 +84,7 @@ class InfoFetch(threading.Thread):
                 if domain == "":
                     domain = url #hack
                 try: # whois and headers
-                    headers = burp_url.getheadersonly(url).dict
+                    headers = burp.url.getHttpHeaders(url)
                     if "cache-control" in headers:
                         info['cache_control'] = headers['cache-control']
                     if "expires" in headers:
@@ -92,10 +96,10 @@ class InfoFetch(threading.Thread):
                     if "transfer-encoding" in headers:
                         info['transfer_encoding'] = headers['transfer-encoding']
                  
-                    info['ip_address'] = burp_url.getIpAddr(domain)
+                    info['ip_address'] = burp.url.getIpAddr(domain)
 
-                    domain = str(domain)
-                    whois = burp_url.getWhoIs(domain)
+                    domain = str(domain) # domain can't be unicode
+                    whois = burp.url.getWhoIs(domain)
                     if whois is not None:
                         for key, value in whois.iteritems():
                             if info.is_valid_key(key):
@@ -112,6 +116,8 @@ class InfoFetch(threading.Thread):
 
 
 class UrlDatabaseLogger(threading.Thread):
+    """Logs UrlInfo objects into the database"""
+
     # kinda gross
     insertStatement = """insert into url_info (
                            url,
@@ -287,20 +293,21 @@ def getUrlsAlreadyProcessed(dbFile):
     return ret
 
 def getUrlsToProcess(the_good, the_bad, count=None):
-    """
-    returns a list of tuples (url, isBad) identifying which are malicious and benign
-    """
+    """returns a list BurpUrl objects from file names"""
     malus = getUrlsFromFile(the_bad, count)
     bene = getUrlsFromFile(the_good, count)
 
     retList = []
     for good, bad in zip(bene, malus):
-        retList.append((good, False))
-        retList.append((bad, True))
+        retList.append(BurpUrl(good, False))
+        retList.append(BurpUrl(bad, True))
     return retList
 
 
 def fetchUrls(urls, outputDatabaseFile, threadCount=5, numUrls=None):
+    """Starts InfoFetch threads and builds a queue from urls for them to read.
+    urls is a list of BurpUrl objects
+    outputDatabaseFile is the file where the sqlite database will be filled in, initialize db with UrlDatabaseLogger.init_db call if necessary"""
     if numUrls is None:
         numUrls = len(urls)
 
@@ -336,11 +343,6 @@ if __name__ == '__main__':
         _, dbFile, numThreads = sys.argv
         
         urls = getUrlsToProcess(benign_url_file, malicious_url_file)
-        #usedUrls = getUrlsAlreadyProcessed('url_info.db')
-        #proc_urls = []
-        #for u in urls:
-            #if u[0] not in proc_urls:
-                #proc_urls.append(u)
 
         fetchUrls(urls, dbFile, int(numThreads))
     else:

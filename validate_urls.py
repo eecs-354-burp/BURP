@@ -8,6 +8,7 @@ import codecs
 logFile = codecs.open('error_log_validator.txt', 'a', 'utf-8')
 
 class UrlValidator(threading.Thread):
+    """Checks to make sure website at url is still up"""
     def __init__(self, url_queue, out_queue, my_num=0):
         threading.Thread.__init__(self)
         self.url_queue = url_queue
@@ -36,6 +37,7 @@ class UrlValidator(threading.Thread):
 
 
 class UrlLogger(threading.Thread):
+    """Logs urls into a file, one per line"""
     def __init__(self, fileName, urls):
         threading.Thread.__init__(self)
         self.file = codecs.open(fileName, 'a', 'utf-8')
