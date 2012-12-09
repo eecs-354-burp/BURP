@@ -1,5 +1,5 @@
 import sys
-from burp_url.TLD import tlds
+from burp.url.TLD import tlds
 
 try:
   from urllib.parse import urlsplit

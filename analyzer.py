@@ -2,7 +2,7 @@ import socket
 import whois
 import sys
 from pprint import pprint
-from burp_url.tokenizer import getTokens
+from burp.url.tokenizer import getTokens
 
 try:
   from http.client import HTTPConnection
