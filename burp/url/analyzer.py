@@ -47,12 +47,9 @@ def getHttpHeaders(url, redirections=True):
     # HTTPErrorProcessor makes HTTPRedirectHandler work
     opener.add_handler(HTTPErrorProcessor())
     opener.add_handler(HTTPRedirectHandler())
-  try:
-    res = opener.open(HeadRequest(url))
-  except HTTPError as res:
-    pass
+  res = opener.open(HeadRequest(url))
   res.close()
-  return res.info().dict
+  return res.info().__dict__
 
 
 def getIpAddr(dom):
