@@ -4,6 +4,7 @@ import urllib2
 import threading
 import Queue
 import codecs
+import requests
 import burp.html
 import burp.url 
 
@@ -61,9 +62,17 @@ class InfoFetch(threading.Thread):
                 info = UrlInfo(url, isBad)
                 # okay want to isolate errors as much as possible
 
+                try:
+                    r = requests.get(url)
+                except Exception as e:
+                    print('request, %s, %s\n' % (url, e))
+
                 try: # html analysis
-                    html = burp.html.HTMLAnalyzer(url)
-                    html_data = html.analyze()
+                    html = r.text
+                    html_analyzer = HTMLAnalyzer()
+                    html_analyzer.setUrl(url)
+                    html_analyzer.loadHtml(html)
+                    html_data = html_analyzer.analyze()
                     for key, value in html_data.iteritems():
                         info[key] = value
                 except Exception as e:
@@ -84,17 +93,11 @@ class InfoFetch(threading.Thread):
                 if domain == "":
                     domain = url #hack
                 try: # whois and headers
-                    headers = burp.url.getHttpHeaders(url)
-                    if "cache-control" in headers:
-                        info['cache_control'] = headers['cache-control']
-                    if "expires" in headers:
-                        info['expires'] = headers['expires']
-                    if "content-type" in headers:
-                        info['content_type'] = headers['content-type']
-                    if "server" in headers:
-                        info['server'] = headers['server']
-                    if "transfer-encoding" in headers:
-                        info['transfer_encoding'] = headers['transfer-encoding']
+                    analysis['cache_control'] = r.headers['Cache-Control']
+                    analysis['expires'] = r.headers['Expires']
+                    analysis['content_type'] = r.headers['Content-Type']
+                    analysis['server'] = r.headers['Server']
+                    analysis['transfer_encoding'] = r.headers['Transfer-Encoding']
                  
                     info['ip_address'] = burp.url.getIpAddr(domain)
 

@@ -5,16 +5,11 @@
 # Usage: burp [URL]
 ##
 
-import sys, os, re, arff
+import sys, os, re, requests, arff
 from subprocess import Popen, PIPE, STDOUT
 from burp.html import HTMLAnalyzer
 from burp.url import getTokens
-from burp.url import getHttpHeaders, getIpAddr, getWhoIs
-
-try:
-  from urllib.request import URLError
-except ImportError:
-  from urllib2 import URLError
+from burp.url import getIpAddr, getWhoIs
 
 WEKA_MODEL = 'weka/J48.model'
 WEKA_TRAINING_SET = 'weka/training_set.arff'
@@ -29,13 +24,22 @@ if not len(sys.argv) == 2:
 ##
 
 url = sys.argv[1]
-url = url.strip(',') # saw in log file a lot
 analysis = {}
+
+print("Retrieving web page ...")
+try:
+  r = requests.get(url)
+except Exception as e:
+  print('ERROR: Could not retrieve %s' % (url))
+  exit(1)
 
 print("Analyzing HTML ...")
 try: # html analysis
-  html = HTMLAnalyzer(url)
-  analysis = html.analyze()
+  html = r.text
+  htmlanalyzer = HTMLAnalyzer()
+  htmlanalyzer.setUrl(url)
+  htmlanalyzer.loadHtml(html)
+  analysis = htmlanalyzer.analyze()
 except Exception as e:
   print('ERROR: HTML Analysis, %s, %s\n' %(url, e))
   exit(1)
@@ -63,17 +67,11 @@ if domain == "":
   domain = url #hack
 
 print("Analyzing HTTP headers ...")
-headers = getHttpHeaders(url)
-if headers.__contains__("cache-control"):
-    analysis['cache_control'] = headers['cache-control']
-if headers.__contains__("expires"):
-    analysis['expires'] = headers['expires']
-if headers.__contains__("content-type"):
-    analysis['content_type'] = headers['content-type']
-if headers.__contains__("server"):
-    analysis['server'] = headers['server']
-if headers.__contains__("transfer-encoding"):
-    analysis['transfer_encoding'] = headers['transfer-encoding']
+analysis['cache_control'] = r.headers['Cache-Control']
+analysis['expires'] = r.headers['Expires']
+analysis['content_type'] = r.headers['Content-Type']
+analysis['server'] = r.headers['Server']
+analysis['transfer_encoding'] = r.headers['Transfer-Encoding']
 
 ipAddress = getIpAddr(domain)
 analysis['ip_address'] = ipAddress
