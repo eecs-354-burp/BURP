@@ -12,13 +12,15 @@ Installation
 
 2. Follow [these instructions](http://weka.wikispaces.com/CLASSPATH) to add the weka.jar file to your CLASSPATH
 
-3. Install the [BURP fork of python-whois](https://github.com/eecs-354-burp/python-whois):
+3. Install [lxml](http://lxml.de/installation.html#installation)
+
+4. Install the [BURP fork of python-whois](https://github.com/eecs-354-burp/python-whois):
 
         git clone https://github.com/eecs-354-burp/python-whois
         cd python-whois
         python setup.py install
 
-4. Install BURP:
+5. Install BURP:
 
         git clone https://github.com/eecs-354-burp/BURP
         cd BURP
