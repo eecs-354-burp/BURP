@@ -8,6 +8,9 @@ setup(
   version = '0.1',
   packages = find_packages(),
   scripts = ['scripts/burp'],
+  package_data = {
+    '': ['weka/*']
+  },
   test_suite = 'burp.html.tests',
   install_requires = [
     'requests>=0.14.2',
