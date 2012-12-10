@@ -35,5 +35,6 @@ def getTokens(url):
     raise ValueError("Domain not in global list of TLDs")
 
   subdomain = path_and_port[0].replace(domain, "").strip('.')
-  return (subdomain, domain, parsed.port, parsed.path)
-
+  return {"subdomain" : subdomain, "domain" : domain, "port" : parsed.port, "path" : parsed.path}
+  
+  

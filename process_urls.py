@@ -80,12 +80,9 @@ class InfoFetch(threading.Thread):
                     
                 domain = ""
                 try: # tokenizer
-                    tokens = burp.url.getTokens(url)
-                    info['subdomain'] = tokens[0]
-                    info['domain'] = tokens[1]
-                    domain = tokens[1]
-                    info['port'] = tokens[2]
-                    info['path'] = tokens[3]
+                    info = burp.url.getTokens(url)
+                    domain = info['domain']
+                    
                 except Exception as e:
                     logFile.write('tokenizer, %s, %s\n' % (url, str(e)))
 
