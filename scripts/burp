@@ -48,17 +48,14 @@ print("Analyzing URL ...")
 domain = ""
 try: # tokenizer
   tokens = getTokens(url)
-  subdomain = tokens[0]
-  analysis['subdomain'] = subdomain
+  analysis.update(tokens)
+
+  subdomain = tokens['subdomain']
   analysis['number_subdomains'] = subdomain.count('.') + 1
   analysis['subdomain_length'] = len(subdomain)
 
-  domain = tokens[1]
-  analysis['domain'] = domain
+  domain = tokens['domain']
   analysis['domain_length'] = len(domain)
-
-  analysis['port'] = tokens[2]
-  analysis['path'] = tokens[3]
 except Exception as e:
   print('ERROR: Tokenizer, %s, %s\n' % (url, str(e)))
   exit(1)
