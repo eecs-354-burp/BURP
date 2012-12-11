@@ -112,7 +112,7 @@ class InfoFetch(threading.Thread):
                     info['transfer_encoding'] = r.headers['Transfer-Encoding']
                  
                     info['ip_address'] = url_info["whois"]
-					info['ip_address_a'] = info['ip_address'].split('.')[0] #first octet
+                    info['ip_address_a'] = info['ip_address'].split('.')[0] #first octet
 
                     domain = str(domain) # domain can't be unicode
                     whois = url_info["whois"]
