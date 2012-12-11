@@ -1,9 +1,13 @@
-BURP
+BURP - The Better URL Reputation Platform
 ====
 
-The Better URL Reputation Platform
+Developed by Khalid Aziz, Peter Li, Christopher Moran, and Ethan Romba
 
-By Khalid Aziz, Peter Li, Christopher Moran, and Ethan Romba
+BURP is a Python package that performs static analysis of HTML, URL tokens, HTTP headers, and WHOIS information, extracting features that can be used to evaluate the reputation of an arbitrary URL. The extracted features can be fed into a machine-learning system such as Weka to enable intelligent classification of URLs.
+
+The package includes a script for analyzing URLs in bulk (e.g. for creating training sets), as well as a script that uses Weka to classify individual URLs as malicious or benign based on a decision-tree model developed from a training set of ~44,000 URLs.
+
+BURP requires Python 2.6+ / 3.1+.
 
 Installation
 ------------
@@ -56,27 +60,58 @@ To analyze an HTML string directly, be sure to call the `setUrl()` method with t
     analyzer.setUrl('http://www.example.com')
     analysis = analyzer.analyze()
 
-The `analyze()` method returns a dictionary with the following format:
+The `analyze()` method returns a dictionary with the following keys:
 
-    {
-      "numCharacters":                Int,
-      "percentWhitespace":            Float,
-      "percentScriptContent":         Float,
-      "numIframes":                   Int,
-      "numScripts":                   Int,
-      "numScriptsWithWrongExtension": Int,
-      "numEmbeds":                    Int,
-      "numObjects":                   Int,
-      "numSuspiciousObjects":         Int,
-      "numHyperlinks":                Int,
-      "numMetaRefresh":               Int,
-      "numHiddenElements":            Int,
-      "numSmallElements":             Int,
-      "hasDoubleDocuments":           Bool,
-      "numUnsafeIncludedUrls":        Int,
-      "numExternalUrls":              Int,
-      "percentUnknownElements":       Float
-    }
+* **<code>numCharacters</code>**<br>
+(Int) The number of characters in the HTML document
+
+* **<code>percentWhitespace</code>**<br>
+(Float) The percentage of whitespace characters in the HTML document
+
+* **<code>percentScriptContent</code>**<br>
+(Float) The precentage of inline script content in the HTML document
+
+* **<code>numIframes</code>**<br>
+(Int) The number of `<iframe>` elements
+
+* **<code>numScripts</code>**<br>
+(Int) The number of `<script>` elements
+
+* **<code>numScriptsWithWrongExtension</code>**<br>
+(Int) The number of `<script>` elements with the wrong extension (i.e. not .js)
+
+* **<code>numEmbeds</code>**<br>
+(Int) The number of `<embed>` elements
+
+* **<code>numObjects</code>**<br>
+(Int) The number of `<object>` elements
+
+* **<code>numSuspiciousObjects</code>**<br>
+(Int) The number of `<object>` elements whose classid is contained in a list of ActiveX controls known to be exploitable
+
+* **<code>numHyperlinks</code>**<br>
+(Int) The number of `<a>` elements
+
+* **<code>numMetaRefresh</code>**<br>
+(Int) The number of `<meta>` elements with an `http-equiv="refresh"` attribute
+
+* **<code>numHiddenElements</code>**<br>
+(Int) The number of elements with a style attribute that sets their CSS display property to "none" or their visibility property to "hidden"
+
+* **<code>numSmallElements</code>**<br>
+(Int) The number of elements with width, height, or style attributes that set their width or height to < 2 px or their total area to < 30 sq. px
+
+* **<code>hasDoubleDocuments</code>**<br>
+(Bool) True if the HTML document has more than one `<html>`, `<head>`, `<title>`, or `<body>`
+
+* **<code>numUnsafeIncludedUrls</code>**<br>
+(Int) The total number of URLs included by elements that can be used to include executable code (`<script>`, `<iframe>`, `<frame>`, `<embed>`, `<form>`, `<object>`)
+
+* **<code>numExternalUrls</code>**<br>
+(Int) The total number of included URLs that point to an external domain
+
+* **<code>percentUnknownElements</code>**<br>
+(Float) The percentage of elements that are not recognized by the HTML specification
 
 Running the HTML Test Suite
 ---------------------------
