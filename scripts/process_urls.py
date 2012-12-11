@@ -90,8 +90,9 @@ class InfoFetch(threading.Thread):
                     logFile.write('html analysis, %s, %s\n' %(url, e))
                     
                 domain = ""
+                url_analyzer = URLAnalyzer()
                 try: # tokenizer
-                    info.update(burp.url.getTokens(url))
+                    info.update(url_analyzer.getTokens(url))
                     domain = info['domain']
                     
                 except Exception as e:
@@ -101,17 +102,17 @@ class InfoFetch(threading.Thread):
                 if domain == "":
                     domain = url #try setting domain to the url
                 try: # whois and headers
-                    analysis['cache_control'] = r.headers['Cache-Control']
-                    analysis['expires'] = r.headers['Expires']
-                    analysis['content_type'] = r.headers['Content-Type']
-                    analysis['server'] = r.headers['Server']
-                    analysis['transfer_encoding'] = r.headers['Transfer-Encoding']
+                    info['cache_control'] = r.headers['Cache-Control']
+                    info['expires'] = r.headers['Expires']
+                    info['content_type'] = r.headers['Content-Type']
+                    info['server'] = r.headers['Server']
+                    info['transfer_encoding'] = r.headers['Transfer-Encoding']
                  
-                    info['ip_address'] = burp.url.getIpAddr(domain)
+                    info['ip_address'] = url_analyzer.getIpAddr(domain)
                     info['ip_address_a'] = info['ip_address'].split('.')[0] #first octet
 
                     domain = str(domain) # domain can't be unicode
-                    whois = burp.url.getWhoIs(domain)
+                    whois = url_analyzer.getWhoIs(domain)
                     if whois is not None:
                         for key, value in whois.iteritems():
                             if info.is_valid_key(key): # not using all of the keys returned

@@ -16,8 +16,7 @@ import arff
 # BURP packages
 import burp
 from burp.html import HTMLAnalyzer
-from burp.url import getTokens
-from burp.url import getIpAddr, getWhoIs
+from burp.url import URLAnalyzer
 
 WEKA_MODEL = burp.getWekaFile('J48.model')
 WEKA_TRAINING_SET = burp.getWekaFile('training_set.arff')
@@ -52,9 +51,10 @@ except Exception as e:
   exit(1)
   
 print("Analyzing URL ...")
+url_analyzer = URLAnalyzer()
 domain = ""
 try: # tokenizer
-  tokens = getTokens(url)
+  tokens = url_analyzer.getTokens(url)
   analysis.update(tokens)
 
   subdomain = tokens['subdomain']
@@ -77,7 +77,7 @@ analysis['content_type'] = r.headers['Content-Type']
 analysis['server'] = r.headers['Server']
 analysis['transfer_encoding'] = r.headers['Transfer-Encoding']
 
-ipAddress = getIpAddr(domain)
+ipAddress = url_analyzer.getIpAddr(domain)
 analysis['ip_address'] = ipAddress
 
 if ipAddress is not None:
@@ -85,7 +85,7 @@ if ipAddress is not None:
   analysis['ip_address_a'] = findFirstOctet.search(ipAddress).group(1)
 
 print("Analyzing WHOIS information ...")
-whois = getWhoIs(domain)
+whois = url_analyzer.getWhoIs(domain)
 if whois is not None:
   for key, value in whois.items():
     analysis[key] = str(value)
