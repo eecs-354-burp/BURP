@@ -125,24 +125,24 @@ The BURP URL analyzer is optimized for URLs themselves, the IP addresses associa
 The `analyze()` method returns a dictionary with the following keys:
 
 * **<code>tokens</code>**<br>
-(Dictionary) The tokens contained in the URL. This dictionary contains the following keys:
-        'subdomain_length': (int)
-        'domain': (string)
-        'number_subdomains': (int)
-        'domain_length': (int)
-        'path': (string)
-        'subdomain': (string)
-        'port': (string)
+(Dictionary) The tokens contained in the URL. This dictionary contains the following keys:<br>
+   *  'subdomain_length': (int)<br>
+   *  'domain': (string)<br>
+   *  'number_subdomains': (int)<br>
+   *  'domain_length': (int)<br>
+   *  'path': (string)<br>
+   *  'subdomain': (string)<br>
+   *  'port': (string)<br>
 * **<code>ip</code>**<br>
-(String) IP address associated with the URL.
+(String) IP address associated with the URL.<br>
 * **<code>tokens</code>**<br>
-(Dictionary) The whois information in the URL. This dictionary contains the following keys:
-        ‘last_updated’ : (Datetime Object)
-        ‘name’ : (string)
-        ‘expiration_date’ : (Datetime Object)
-        ‘creation_date’ : (Datetime Object)
-        ‘registrar’ : (string)
-        ‘name_servers’ : (Set of Strings)
+(Dictionary) The whois information in the URL. This dictionary contains the following keys:<br>
+   *  ‘last_updated’ : (Datetime Object)<br>
+   *  ‘name’ : (string)<br>
+   *  ‘expiration_date’ : (Datetime Object)<br>
+   *  ‘creation_date’ : (Datetime Object)<br>
+   *  ‘registrar’ : (string)<br>
+   *  ‘name_servers’ : (Set of Strings)<br>
 
 Running the HTML Test Suite
 ---------------------------
