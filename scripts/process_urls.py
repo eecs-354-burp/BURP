@@ -21,7 +21,8 @@ class UrlInfo(dict):
                        'numExternalUrls', 'percentUnknownElements', 'subdomain', 'domain', 
                        'port', 'path', 'creation_date', 'last_updated', 'registrar', 'expiration_date',
                        'numSuspiciousObjects', 'ip_address', 'content_type', 'expires', 'cache_control',
-                       'server','transfer_encoding'])
+                       'server','transfer_encoding', 'subdomain_length', 'number_subdomains', 
+                       'domain_length', 'ip_address_a'])
     def __init__(self, url, isBad):
         for key in UrlInfo._valid_keys:
             self[key] = None
@@ -36,14 +37,24 @@ class UrlInfo(dict):
     def is_valid_key(self, key):
         return key in UrlInfo._valid_keys
         
-    def valid_keys(self):
+    @staticmethod
+    def valid_keys():
         return UrlInfo._valid_keys.copy()
+
 
 class BurpUrl(object):
     """Holder for url and flag telling if malicious"""
     def __init__(self, url, isBad=False):
         self.url = url
         self.isBad = isBad
+
+    def __str__(self):
+        return 'url: %s, isBad %s' % (self.url, self.isBad)
+
+    def __unicode__(self):
+        return u'url: %s, isBad %s' % (self.url, self.isBad)
+
+
 
 class InfoFetch(threading.Thread):
     """Fetches features for a url, reads from url_queue, outputs info to out_queue"""
@@ -92,21 +103,22 @@ class InfoFetch(threading.Thread):
 
                 
                 if domain == "":
-                    domain = url #hack
+                    domain = url #try setting domain to the url
                 try: # whois and headers
-                    analysis['cache_control'] = r.headers['Cache-Control']
-                    analysis['expires'] = r.headers['Expires']
-                    analysis['content_type'] = r.headers['Content-Type']
-                    analysis['server'] = r.headers['Server']
-                    analysis['transfer_encoding'] = r.headers['Transfer-Encoding']
+                    info['cache_control'] = r.headers['Cache-Control']
+                    info['expires'] = r.headers['Expires']
+                    info['content_type'] = r.headers['Content-Type']
+                    info['server'] = r.headers['Server']
+                    info['transfer_encoding'] = r.headers['Transfer-Encoding']
                  
                     info['ip_address'] = url_info["whois"]
+					info['ip_address_a'] = info['ip_address'].split('.')[0] #first octet
 
                     domain = str(domain) # domain can't be unicode
                     whois = url_info["whois"]
                     if whois is not None:
                         for key, value in whois.iteritems():
-                            if info.is_valid_key(key):
+                            if info.is_valid_key(key): # not using all of the keys returned
                                 info[key] = str(value)
                     
                 except Exception as e:
@@ -122,121 +134,63 @@ class InfoFetch(threading.Thread):
 class UrlDatabaseLogger(threading.Thread):
     """Logs UrlInfo objects into the database"""
 
-    # kinda gross
-    insertStatement = """insert into url_info (
-                           url,
-                           isBad,
-                           html_numCharacters,
-                           html_percentWhitespace,
-                           html_percentScriptContent,
-                           html_numIframes,
-                           html_numScripts,
-                           html_numScriptsWithWrongExtension,
-                           html_numEmbeds, 
-                           html_numObjects,
-                           html_numSuspiciousObjects,
-                           html_numHyperlinks, 
-                           html_numMetaRefresh,
-                           html_numHiddenElements, 
-                           html_numSmallElements,
-                           html_hasDoubleDocuments,
-                           html_numUnsafeIncludedUrls,
-                           html_numExternalUrls,
-                           html_percentUnknownElements,
-                           ip_address,
-                           headers_content_type,
-                           headers_expires,
-                           headers_cache_control,
-                           headers_server,
-                           headers_transfer_encoding,
-                           token_subdomain,
-                           token_domain,
-                           token_port,
-                           token_path,
-                           whois_creation_date,
-                           whois_last_updated,
-                           whois_registrar,
-                           whois_expiration_date ) values (
-                           :url, 
-                           :isBad, 
-                           :numCharacters,
-                           :percentWhitespace,
-                           :percentScriptContent,
-                           :numIframes,
-                           :numScripts,
-                           :numScriptsWithWrongExtension,
-                           :numEmbeds, 
-                           :numObjects,
-                           :numSuspiciousObjects,
-                           :numHyperlinks, 
-                           :numMetaRefresh,
-                           :numHiddenElements, 
-                           :numSmallElements,
-                           :hasDoubleDocuments,
-                           :numUnsafeIncludedUrls,
-                           :numExternalUrls,
-                           :percentUnknownElements,
-                           :ip_address,
-                           :content_type,
-                           :expires,
-                           :cache_control,
-                           :server,
-                           :transfer_encoding,
-                           :subdomain,
-                           :domain,
-                           :port,
-                           :path,
-                           :creation_date,
-                           :last_updated,
-                           :registrar,
-                           :expiration_date )
-    """
+    _fields = list(UrlInfo.valid_keys()) # need to iterate in same order
+    
+    #insert statement for table
+    _insert = """insert into url_info (%s) values (%s)""" % (",".join(_fields), 
+                                                             ",".join([':'+f for f in _fields]))
+
     def __init__(self, dbFileName, urls_queue):
         threading.Thread.__init__(self)
         self.db_file = dbFileName
         self.urls = urls_queue
 
     def init_db(self):
+        # need to be same name as keys in UrlInfo
         createSql = '''create table if not exists url_info (
                            url text primary key,
                            isBad boolean,
-                           html_numCharacters int,
-                           html_percentWhitespace int,
-                           html_percentScriptContent int,
-                           html_numIframes int,
-                           html_numScripts int,
-                           html_numScriptsWithWrongExtension int,
-                           html_numEmbeds int, 
-                           html_numObjects int,
-                           html_numSuspiciousObjects int,
-                           html_numHyperlinks int, 
-                           html_numMetaRefresh int,
-                           html_numHiddenElements int, 
-                           html_numSmallElements int,
-                           html_hasDoubleDocuments boolean,
-                           html_numUnsafeIncludedUrls int,
-                           html_numExternalUrls int,
-                           html_percentUnknownElements int,
+                           numCharacters int,
+                           percentWhitespace int,
+                           percentScriptContent int,
+                           numIframes int,
+                           numScripts int,
+                           numScriptsWithWrongExtension int,
+                           numEmbeds int, 
+                           numObjects int,
+                           numSuspiciousObjects int,
+                           numHyperlinks int, 
+                           numMetaRefresh int,
+                           numHiddenElements int, 
+                           numSmallElements int,
+                           hasDoubleDocuments boolean,
+                           numUnsafeIncludedUrls int,
+                           numExternalUrls int,
+                           percentUnknownElements int,
                            ip_address text,
-                           headers_content_type text,
-                           headers_expires text,
-                           headers_cache_control text,
-                           headers_server text,
-                           headers_transfer_encoding text,
-                           token_subdomain text,
-                           token_domain text,
-                           token_port int,
-                           token_path text,
-                           whois_creation_date text,
-                           whois_last_updated text,
-                           whois_registrar text,
-                           whois_expiration_date text 
+                           ip_address_a text,
+                           content_type text,
+                           expires text,
+                           cache_control text,
+                           server text,
+                           transfer_encoding text,
+                           subdomain text,
+                           subdomain_length int,
+                           number_subdomains int,
+                           domain text,
+                           domain_length int,
+                           port int,
+                           path text,
+                           creation_date text,
+                           last_updated text,
+                           registrar text,
+                           expiration_date text 
                        )
         '''
         self.curs.execute(createSql)
 
     def open_db(self):
-        self.db_conn = sqlite3.connect(self.db_file)
+        self.db_conn = sqlite3.connect(self.db_file) # needs to be done on the same thread
         self.curs = self.db_conn.cursor()
         self.init_db()
 
@@ -245,7 +199,7 @@ class UrlDatabaseLogger(threading.Thread):
         while True:
             url_info = self.urls.get()
             try:
-                self.curs.execute(UrlDatabaseLogger.insertStatement, url_info)
+                self.curs.execute(UrlDatabaseLogger._insert, url_info)
                 self.curs.execute('COMMIT') # force db to accept changes
             except Exception as e:
                 logFile.write("error on insert %s\n" % str(e))

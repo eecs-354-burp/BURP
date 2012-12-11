@@ -16,7 +16,8 @@ class URLAnalyzer:
     return { "whois" : self.getWhoIs(tokens["domain"]), "ip" : self.getIpAddr(tokens["domain"]), "tokens" : tokens }
     
   def getWhoIs(self, dom):
-    """Return a dictionary of whois infomation
+    """
+    Return a dictionary of whois infomation
     Will throw exception if tld server not known, or query limit reached
     """
     ws = whois.query(dom)
@@ -28,7 +29,7 @@ class URLAnalyzer:
 
 
   def getTokens(self, url):
-    """Returns a 4 tuple of sub-domain, domain, port, path"""
+    """Returns a dictionary of subdomain, subdomain_length, number_subdomains, domain, domain_length, port, path"""
     parsed = urlsplit(url)
     path_and_port = parsed[1].split(':')
     url_elements = path_and_port[0].split('.')
@@ -56,4 +57,8 @@ class URLAnalyzer:
       raise ValueError("Domain not in global list of TLDs")
 
     subdomain = path_and_port[0].replace(domain, "").strip('.')
-    return {"subdomain" : subdomain, "domain" : domain, "port" : parsed.port, "path" : parsed.path}
+    num_subdomains = len(subdomain.split('.'))
+    return {"subdomain" : subdomain, "subdomain_length" : len(subdomain), "number_subdomains" : num_subdomains,
+            "domain" : domain, "domain_length": len(domain), "port" : parsed.port, "path" : parsed.path }
+  
+
