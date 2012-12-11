@@ -7,7 +7,7 @@ except ImportError:
   from urlparse import urlsplit
 
 def getTokens(url):
-  """Returns a 4 tuple of sub-domain, domain, port, path"""
+  """Returns a dictionary of subdomain, subdomain_length, number_subdomains, domain, domain_length, port, path"""
   parsed = urlsplit(url)
   path_and_port = parsed[1].split(':')
   url_elements = path_and_port[0].split('.')
@@ -35,6 +35,8 @@ def getTokens(url):
     raise ValueError("Domain not in global list of TLDs")
 
   subdomain = path_and_port[0].replace(domain, "").strip('.')
-  return {"subdomain" : subdomain, "domain" : domain, "port" : parsed.port, "path" : parsed.path}
+  num_subdomains = len(subdomain.split('.'))
+  return {"subdomain" : subdomain, "subdomain_length" : len(subdomain), "number_subdomains" : num_subdomains,
+          "domain" : domain, "domain_length": len(domain), "port" : parsed.port, "path" : parsed.path }
   
   
