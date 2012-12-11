@@ -79,13 +79,16 @@ class InfoFetch(threading.Thread):
                     logFile.write('html analysis, %s, %s\n' %(url, e))
                     
                 domain = ""
+                url_info = {};
                 url_analyzer = URLAnalyzer()
-                try: # tokenizer
-                    info.update(url_analyzer.getTokens(url))
+                
+                try: # url analyzer
+                    url_info = url_analyzer.analyze(url)
+                    info.update(url_info["tokens"])
                     domain = info['domain']
                     
                 except Exception as e:
-                    logFile.write('tokenizer, %s, %s\n' % (url, str(e)))
+                    logFile.write('url analyzer, %s, %s\n' % (url, str(e)))
 
                 
                 if domain == "":
@@ -97,10 +100,10 @@ class InfoFetch(threading.Thread):
                     analysis['server'] = r.headers['Server']
                     analysis['transfer_encoding'] = r.headers['Transfer-Encoding']
                  
-                    info['ip_address'] = url_analyzer.getIpAddr(domain)
+                    info['ip_address'] = url_info["whois"]
 
                     domain = str(domain) # domain can't be unicode
-                    whois = url_analyzer.getWhoIs(domain)
+                    whois = url_info["whois"]
                     if whois is not None:
                         for key, value in whois.iteritems():
                             if info.is_valid_key(key):

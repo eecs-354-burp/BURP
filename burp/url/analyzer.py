@@ -9,6 +9,12 @@ except ImportError:
   from urlparse import urlsplit
 
 class URLAnalyzer:
+  
+  def analyze(self, url):
+    """ Returns a dictionary containing whois, ip and url tokens """
+    tokens =  self.getTokens(url)
+    return { "whois" : self.getWhoIs(tokens["domain"]), "ip" : self.getIpAddr(tokens["domain"]), "tokens" : tokens }
+    
   def getWhoIs(self, dom):
     """Return a dictionary of whois infomation
     Will throw exception if tld server not known, or query limit reached

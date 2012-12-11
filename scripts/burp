@@ -52,9 +52,11 @@ except Exception as e:
   
 print("Analyzing URL ...")
 url_analyzer = URLAnalyzer()
+url_info = {}
 domain = ""
-try: # tokenizer
-  tokens = url_analyzer.getTokens(url)
+try: # url analyzer
+  url_info = url_analyzer.analyze(url)
+  tokens = url_info["tokens"]
   analysis.update(tokens)
 
   subdomain = tokens['subdomain']
@@ -64,7 +66,7 @@ try: # tokenizer
   domain = tokens['domain']
   analysis['domain_length'] = len(domain)
 except Exception as e:
-  print('ERROR: Tokenizer, %s, %s\n' % (url, str(e)))
+  print('ERROR: url analyzer, %s, %s\n' % (url, str(e)))
   exit(1)
 
 if domain == "":
@@ -77,7 +79,7 @@ analysis['content_type'] = r.headers['Content-Type']
 analysis['server'] = r.headers['Server']
 analysis['transfer_encoding'] = r.headers['Transfer-Encoding']
 
-ipAddress = url_analyzer.getIpAddr(domain)
+ipAddress = url_info["ip"]
 analysis['ip_address'] = ipAddress
 
 if ipAddress is not None:
@@ -85,7 +87,7 @@ if ipAddress is not None:
   analysis['ip_address_a'] = findFirstOctet.search(ipAddress).group(1)
 
 print("Analyzing WHOIS information ...")
-whois = url_analyzer.getWhoIs(domain)
+whois = url_info["whois"]
 if whois is not None:
   for key, value in whois.items():
     analysis[key] = str(value)
