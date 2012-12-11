@@ -21,6 +21,7 @@ class URLAnalyzer:
     Will throw exception if tld server not known, or query limit reached
     """
     ws = whois.query(dom)
+    print ws.__dict__
     return ws.__dict__;
 
   def getIpAddr(self, dom):

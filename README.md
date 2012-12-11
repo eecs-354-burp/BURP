@@ -113,6 +113,37 @@ The `analyze()` method returns a dictionary with the following keys:
 * **<code>percentUnknownElements</code>**<br>
 (Float) The percentage of elements that are not recognized by the HTML specification
 
+
+### URL Analyzer
+
+The BURP URL analyzer is optimized for URLs themselves, the IP addresses associated with the URLs, and the WHOIS information related to URLs:
+        from burp.html import URLAnalyzer
+        analyzer = URLAnalyzer()
+        analysis1 = analyzer.analyze(url1)
+        analysis2 = analyzer.analyze(url2)
+
+The `analyze()` method returns a dictionary with the following keys:
+
+* **<code>tokens</code>**<br>
+(Dictionary) The tokens contained in the URL. This dictionary contains the following keys:
+        'subdomain_length': (int)
+        'domain': (string)
+        'number_subdomains': (int)
+        'domain_length': (int)
+        'path': (string)
+        'subdomain': (string)
+        'port': (string)
+* **<code>ip</code>**<br>
+(String) IP address associated with the URL.
+* **<code>tokens</code>**<br>
+(Dictionary) The whois information in the URL. This dictionary contains the following keys:
+        ‘last_updated’ : (Datetime Object)
+        ‘name’ : (string)
+        ‘expiration_date’ : (Datetime Object)
+        ‘creation_date’ : (Datetime Object)
+        ‘registrar’ : (string)
+        ‘name_servers’ : (Set of Strings)
+
 Running the HTML Test Suite
 ---------------------------
 
