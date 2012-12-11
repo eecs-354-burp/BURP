@@ -8,46 +8,46 @@ try:
 except ImportError:
   from urlparse import urlsplit
 
+class URLAnalyzer:
+  def getWhoIs(self, dom):
+    """Return a dictionary of whois infomation
+    Will throw exception if tld server not known, or query limit reached
+    """
+    ws = whois.query(dom)
+    return ws.__dict__;
 
-def getWhoIs(dom):
-  """Return a dictionary of whois infomation
-  Will throw exception if tld server not known, or query limit reached
-  """
-  ws = whois.query(dom)
-  return ws.__dict__;
-
-def getIpAddr(dom):
-  """Return the ip address of the domain"""
-  return socket.gethostbyname(dom);
+  def getIpAddr(self, dom):
+    """Return the ip address of the domain"""
+    return socket.gethostbyname(dom);
 
 
-def getTokens(url):
-  """Returns a 4 tuple of sub-domain, domain, port, path"""
-  parsed = urlsplit(url)
-  path_and_port = parsed[1].split(':')
-  url_elements = path_and_port[0].split('.')
-  # url_elements = ["abcde","co","uk"]
-  
-  domain = ""
-  for i in range(-len(url_elements), 0):
-    last_i_elements = url_elements[i:]
-    #    i=-3: ["abcde","co","uk"]
-    #    i=-2: ["co","uk"]
-    #    i=-1: ["uk"] etc
+  def getTokens(self, url):
+    """Returns a 4 tuple of sub-domain, domain, port, path"""
+    parsed = urlsplit(url)
+    path_and_port = parsed[1].split(':')
+    url_elements = path_and_port[0].split('.')
+    # url_elements = ["abcde","co","uk"]
     
-    candidate = ".".join(last_i_elements) # abcde.co.uk, co.uk, uk
-    wildcard_candidate = ".".join(["*"] + last_i_elements[1:]) # *.co.uk, *.uk, *
-    exception_candidate = "!" + candidate
-    
-    # match tlds: 
-    if (exception_candidate in tlds):
-      domain =  ".".join(url_elements[i:]) 
-    if (candidate in tlds or wildcard_candidate in tlds):
-      domain =  ".".join(url_elements[i-1:])
-      # returns "abcde.co.uk"
-        
-  if domain == "":
-    raise ValueError("Domain not in global list of TLDs")
+    domain = ""
+    for i in range(-len(url_elements), 0):
+      last_i_elements = url_elements[i:]
+      #    i=-3: ["abcde","co","uk"]
+      #    i=-2: ["co","uk"]
+      #    i=-1: ["uk"] etc
+      
+      candidate = ".".join(last_i_elements) # abcde.co.uk, co.uk, uk
+      wildcard_candidate = ".".join(["*"] + last_i_elements[1:]) # *.co.uk, *.uk, *
+      exception_candidate = "!" + candidate
+      
+      # match tlds: 
+      if (exception_candidate in tlds):
+        domain =  ".".join(url_elements[i:]) 
+      if (candidate in tlds or wildcard_candidate in tlds):
+        domain =  ".".join(url_elements[i-1:])
+        # returns "abcde.co.uk"
+          
+    if domain == "":
+      raise ValueError("Domain not in global list of TLDs")
 
-  subdomain = path_and_port[0].replace(domain, "").strip('.')
-  return {"subdomain" : subdomain, "domain" : domain, "port" : parsed.port, "path" : parsed.path}
+    subdomain = path_and_port[0].replace(domain, "").strip('.')
+    return {"subdomain" : subdomain, "domain" : domain, "port" : parsed.port, "path" : parsed.path}

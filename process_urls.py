@@ -79,8 +79,9 @@ class InfoFetch(threading.Thread):
                     logFile.write('html analysis, %s, %s\n' %(url, e))
                     
                 domain = ""
+                url_analyzer = URLAnalyzer()
                 try: # tokenizer
-                    info.update(burp.url.getTokens(url))
+                    info.update(url_analyzer.getTokens(url))
                     domain = info['domain']
                     
                 except Exception as e:
@@ -96,10 +97,10 @@ class InfoFetch(threading.Thread):
                     analysis['server'] = r.headers['Server']
                     analysis['transfer_encoding'] = r.headers['Transfer-Encoding']
                  
-                    info['ip_address'] = burp.url.getIpAddr(domain)
+                    info['ip_address'] = url_analyzer.getIpAddr(domain)
 
                     domain = str(domain) # domain can't be unicode
-                    whois = burp.url.getWhoIs(domain)
+                    whois = url_analyzer.getWhoIs(domain)
                     if whois is not None:
                         for key, value in whois.iteritems():
                             if info.is_valid_key(key):
